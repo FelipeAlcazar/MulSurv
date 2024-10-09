@@ -162,6 +162,7 @@ def show_menu():
 # Juego principal
 def main():
     show_menu()
+    pygame.mouse.set_visible(False)
     player = Player(weapon="Sword")
     enemies = []
     projectiles = []
@@ -169,6 +170,7 @@ def main():
     last_spawn_time = pygame.time.get_ticks()
     spawn_delay = 2000  # milliseconds
     blink_interval = 200  # milliseconds
+    score = 0
     running = True
 
     while running:
@@ -177,6 +179,9 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
 
         # Movimiento del jugador
         keys = pygame.key.get_pressed()
@@ -208,6 +213,7 @@ def main():
                 if check_collision(projectile, enemy):
                     enemies.remove(enemy)
                     projectiles.remove(projectile)
+                    score += 1
                     break
 
         # Generar más enemigos con el tiempo
@@ -243,6 +249,11 @@ def main():
             if now - spawn_time > spawn_delay:
                 enemies.append(SpecificEnemy(spawn_x, spawn_y))
                 spawn_indicators.remove(indicator)
+
+        # Mostrar puntaje
+        font = pygame.font.Font(None, 36)
+        score_text = font.render(f'Score: {score}', True, WHITE)
+        screen.blit(score_text, (10, 10))
 
         # Actualizar la pantalla
         pygame.display.update()
