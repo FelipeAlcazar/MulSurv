@@ -51,6 +51,9 @@ class Player(Character):
         self.direction = pygame.K_RIGHT
         self.shoot_delay = 500  # milliseconds
         self.last_shot = pygame.time.get_ticks()
+        self.experience = 0
+        self.level = 1
+        self.experience_to_next_level = 100
 
     def move(self, keys):
         super().move(keys)
@@ -77,6 +80,13 @@ class Player(Character):
                 return Projectile(self.x + self.size // 2, self.y + self.size, 0, 10)
         return None
 
+    def draw_experience_bar(self):
+        bar_width = 200
+        bar_height = 20
+        fill = (self.experience / self.experience_to_next_level) * bar_width
+        pygame.draw.rect(screen, WHITE, (10, 40, bar_width, bar_height), 2)
+        pygame.draw.rect(screen, GREEN, (10, 40, fill, bar_height))
+
 # Clase para proyectiles
 class Projectile:
     def __init__(self, x, y, dx, dy):
@@ -95,13 +105,14 @@ class Projectile:
 
 # Clase base para enemigos
 class Enemy:
-    def __init__(self, x, y, size, speed, image_path):
+    def __init__(self, x, y, size, speed, image_path, experience):
         self.size = size
         self.x = x
         self.y = y
         self.speed = speed
         self.image = pygame.image.load(image_path)
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
+        self.experience = experience
 
     def draw(self):
         screen.blit(self.image, (self.x, self.y))
@@ -118,7 +129,21 @@ class Enemy:
 # Clase enemigo específico
 class SpecificEnemy(Enemy):
     def __init__(self, x, y):
-        super().__init__(x, y, 40, 2, 'enemy_image.png')
+        super().__init__(x, y, 40, 2, 'enemy_image.png', random.randint(10, 20))
+
+# Clase para puntos de experiencia
+class ExperiencePoint:
+    def __init__(self, x, y, value):
+        self.x = x
+        self.y = y
+        self.value = value
+        self.size = 10
+
+    def draw(self):
+        pygame.draw.circle(screen, GREEN, (self.x, self.y), self.size)
+
+    def move(self):
+        pass  # Experience points don't move
 
 # Función para detectar colisiones
 def check_collision(entity1, entity2):
@@ -140,6 +165,9 @@ def show_menu():
     screen.blit(quit_text, quit_rect)
     pygame.display.update()
 
+    options = [play_rect, quit_rect]
+    selected_option = 0
+
     waiting = True
     while waiting:
         for event in pygame.event.get():
@@ -147,17 +175,51 @@ def show_menu():
                 pygame.quit()
                 exit()
             if event.type == pygame.KEYDOWN:
-                if play_rect.collidepoint(pygame.mouse.get_pos()):
-                    waiting = False
-                elif quit_rect.collidepoint(pygame.mouse.get_pos()):
-                    pygame.quit()
-                    exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if play_rect.collidepoint(event.pos):
-                    waiting = False
-                elif quit_rect.collidepoint(event.pos):
-                    pygame.quit()
-                    exit()
+                if event.key == pygame.K_DOWN:
+                    selected_option = (selected_option + 1) % len(options)
+                elif event.key == pygame.K_UP:
+                    selected_option = (selected_option - 1) % len(options)
+                elif event.key == pygame.K_RETURN:
+                    if selected_option == 0:
+                        waiting = False
+                    elif selected_option == 1:
+                        pygame.quit()
+                        exit()
+
+        # Highlight selected option
+        screen.fill(BLACK)
+        screen.blit(play_text, play_rect)
+        screen.blit(quit_text, quit_rect)
+        pygame.draw.rect(screen, GREEN, options[selected_option], 3)
+        pygame.display.update()
+
+# Función para mostrar opciones de mejora
+def show_upgrade_options():
+    upgrade_font = pygame.font.Font(None, 74)
+    option1_text = upgrade_font.render("Upgrade 1", True, WHITE)
+    option1_rect = option1_text.get_rect(center=(WIDTH // 2 - 300, HEIGHT // 2))
+    option2_text = upgrade_font.render("Upgrade 2", True, WHITE)
+    option2_rect = option2_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+    option3_text = upgrade_font.render("Upgrade 3", True, WHITE)
+    option3_rect = option3_text.get_rect(center=(WIDTH // 2 + 300, HEIGHT // 2))
+
+    options = [option1_rect, option2_rect, option3_rect]
+    selected_option = 0
+
+    # Lower opacity of the game
+    overlay = pygame.Surface((WIDTH, HEIGHT))
+    overlay.set_alpha(128)  # Set transparency level
+    overlay.fill(BLACK)
+    screen.blit(overlay, (0, 0))
+
+    # Highlight selected option
+    screen.blit(option1_text, option1_rect)
+    screen.blit(option2_text, option2_rect)
+    screen.blit(option3_text, option3_rect)
+    pygame.draw.rect(screen, GREEN, options[selected_option], 3)
+    pygame.display.update()
+
+    return options, selected_option
 
 # Juego principal
 def main():
@@ -166,12 +228,17 @@ def main():
     player = Player(weapon="Sword")
     enemies = []
     projectiles = []
+    experience_points = []
     spawn_indicators = []
     last_spawn_time = pygame.time.get_ticks()
     spawn_delay = 2000  # milliseconds
     blink_interval = 200  # milliseconds
     score = 0
+    start_time = pygame.time.get_ticks()
     running = True
+    upgrade_menu_active = False
+    options = []
+    selected_option = 0
 
     while running:
         screen.fill(BLACK)
@@ -182,78 +249,131 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
+                if upgrade_menu_active:
+                    if event.key == pygame.K_RIGHT:
+                        selected_option = (selected_option + 1) % len(options)
+                    elif event.key == pygame.K_LEFT:
+                        selected_option = (selected_option - 1) % len(options)
+                    elif event.key == pygame.K_RETURN:
+                        upgrade_menu_active = False
 
-        # Movimiento del jugador
-        keys = pygame.key.get_pressed()
-        player.move(keys)
-        player.draw()
+        if not upgrade_menu_active:
+            # Movimiento del jugador
+            keys = pygame.key.get_pressed()
+            player.move(keys)
+            player.draw()
+            player.draw_experience_bar()
 
-        # Disparar automáticamente
-        projectile = player.shoot()
-        if projectile:
-            projectiles.append(projectile)
+            # Disparar automáticamente
+            projectile = player.shoot()
+            if projectile:
+                projectiles.append(projectile)
 
-        # Movimiento de proyectiles
-        for projectile in projectiles:
-            projectile.move()
-            projectile.draw()
-
-        # Movimiento de enemigos
-        for enemy in enemies:
-            enemy.move_towards_player(player)
-            enemy.draw()
-
-            # Verificar colisión con el jugador
-            if check_collision(player, enemy):
-                print("¡Juego Terminado!")
-                running = False
-
-            # Verificar colisión con proyectiles
+            # Movimiento de proyectiles
             for projectile in projectiles:
-                if check_collision(projectile, enemy):
-                    enemies.remove(enemy)
-                    projectiles.remove(projectile)
-                    score += 1
-                    break
+                projectile.move()
+                projectile.draw()
 
-        # Generar más enemigos con el tiempo
-        now = pygame.time.get_ticks()
-        if now - last_spawn_time > spawn_delay:
-            last_spawn_time = now
-            side = random.choice(['top', 'bottom', 'left', 'right'])
-            if side == 'top':
-                spawn_x = random.randint(0, WIDTH - 40)
-                spawn_y = 0
-            elif side == 'bottom':
-                spawn_x = random.randint(0, WIDTH - 40)
-                spawn_y = HEIGHT - 40
-            elif side == 'left':
-                spawn_x = 0
-                spawn_y = random.randint(0, HEIGHT - 40)
-            elif side == 'right':
-                spawn_x = WIDTH - 40
-                spawn_y = random.randint(0, HEIGHT - 40)
-            spawn_indicators.append((spawn_x, spawn_y, now, side))
+            # Movimiento de enemigos
+            for enemy in enemies:
+                enemy.move_towards_player(player)
+                enemy.draw()
 
-        # Dibujar indicadores de spawn
-        for indicator in spawn_indicators:
-            spawn_x, spawn_y, spawn_time, side = indicator
-            direction_x = player.x - spawn_x
-            direction_y = player.y - spawn_y
-            angle = math.degrees(math.atan2(direction_y, direction_x))
-            arrow = pygame.image.load('arrow.png')
-            arrow = pygame.transform.rotate(arrow, -angle)
-            arrow_rect = arrow.get_rect(center=(spawn_x + 20, spawn_y + 20))
-            if (now // blink_interval) % 2 == 0:  # Blink the arrow
-                screen.blit(arrow, arrow_rect)
-            if now - spawn_time > spawn_delay:
-                enemies.append(SpecificEnemy(spawn_x, spawn_y))
-                spawn_indicators.remove(indicator)
+                # Verificar colisión con el jugador
+                if check_collision(player, enemy):
+                    print("¡Juego Terminado!")
+                    running = False
 
-        # Mostrar puntaje
-        font = pygame.font.Font(None, 36)
-        score_text = font.render(f'Score: {score}', True, WHITE)
-        screen.blit(score_text, (10, 10))
+                # Verificar colisión con proyectiles
+                for projectile in projectiles:
+                    if check_collision(projectile, enemy):
+                        enemies.remove(enemy)
+                        projectiles.remove(projectile)
+                        score += 1
+                        if random.random() < 0.5:  # 50% chance to drop experience
+                            experience_points.append(ExperiencePoint(enemy.x, enemy.y, enemy.experience))
+                        break
+
+            # Movimiento y recolección de puntos de experiencia
+            for exp in experience_points:
+                exp.draw()
+                if check_collision(player, exp):
+                    player.experience += exp.value
+                    experience_points.remove(exp)
+                    if player.experience >= player.experience_to_next_level:
+                        player.experience = 0
+                        player.level += 1
+                        upgrade_menu_active = True
+                        options, selected_option = show_upgrade_options()
+
+            # Generar más enemigos con el tiempo
+            now = pygame.time.get_ticks()
+            if now - last_spawn_time > spawn_delay:
+                last_spawn_time = now
+                side = random.choice(['top', 'bottom', 'left', 'right'])
+                if side == 'top':
+                    spawn_x = random.randint(0, WIDTH - 40)
+                    spawn_y = 0
+                elif side == 'bottom':
+                    spawn_x = random.randint(0, WIDTH - 40)
+                    spawn_y = HEIGHT - 40
+                elif side == 'left':
+                    spawn_x = 0
+                    spawn_y = random.randint(0, HEIGHT - 40)
+                elif side == 'right':
+                    spawn_x = WIDTH - 40
+                    spawn_y = random.randint(0, HEIGHT - 40)
+                spawn_indicators.append((spawn_x, spawn_y, now, side))
+
+            # Dibujar indicadores de spawn
+            for indicator in spawn_indicators:
+                spawn_x, spawn_y, spawn_time, side = indicator
+                direction_x = player.x - spawn_x
+                direction_y = player.y - spawn_y
+                angle = math.degrees(math.atan2(direction_y, direction_x))
+                arrow = pygame.image.load('arrow.png')
+                arrow = pygame.transform.rotate(arrow, -angle)
+                arrow_rect = arrow.get_rect(center=(spawn_x + 20, spawn_y + 20))
+                if (now // blink_interval) % 2 == 0:  # Blink the arrow
+                    screen.blit(arrow, arrow_rect)
+                if now - spawn_time > spawn_delay:
+                    enemies.append(SpecificEnemy(spawn_x, spawn_y))
+                    spawn_indicators.remove(indicator)
+
+            # Mostrar puntaje
+            font = pygame.font.Font(None, 36)
+            score_text = font.render(f'Score: {score}', True, WHITE)
+            screen.blit(score_text, (10, 10))
+
+            # Mostrar tiempo
+            elapsed_time = (pygame.time.get_ticks() - start_time) // 1000
+            minutes = elapsed_time // 60
+            seconds = elapsed_time % 60
+            time_text = font.render(f'{minutes:02}:{seconds:02}', True, WHITE)
+            time_rect = time_text.get_rect(topright=(WIDTH - 10, 10))
+            screen.blit(time_text, time_rect)
+
+        else:
+            # Lower opacity of the game
+            overlay = pygame.Surface((WIDTH, HEIGHT))
+            overlay.set_alpha(128)  # Set transparency level
+            overlay.fill(BLACK)
+            screen.blit(overlay, (0, 0))
+
+            # Highlight selected option
+            upgrade_font = pygame.font.Font(None, 74)
+            option1_text = upgrade_font.render("Upgrade 1", True, WHITE)
+            option1_rect = option1_text.get_rect(center=(WIDTH // 2 - 300, HEIGHT // 2))
+            option2_text = upgrade_font.render("Upgrade 2", True, WHITE)
+            option2_rect = option2_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+            option3_text = upgrade_font.render("Upgrade 3", True, WHITE)
+            option3_rect = option3_text.get_rect(center=(WIDTH // 2 + 300, HEIGHT // 2))
+
+            options = [option1_rect, option2_rect, option3_rect]
+            screen.blit(option1_text, option1_rect)
+            screen.blit(option2_text, option2_rect)
+            screen.blit(option3_text, option3_rect)
+            pygame.draw.rect(screen, GREEN, options[selected_option], 3)
 
         # Actualizar la pantalla
         pygame.display.update()
