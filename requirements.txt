@@ -1,0 +1,33 @@
+game_project/
+│
+├── assets/
+│   ├── images/
+│   │   ├── player_image.png
+│   │   ├── enemy_image.png
+│   │   └── arrow.png
+│   ├── sounds/
+│   │   ├── sound_effect.wav
+│   │   └── background_music.mp3
+│   └── fonts/
+│       └── font.ttf
+│
+├── src/
+│   ├── models/
+│   │   ├── character.py
+│   │   ├── player.py
+│   │   ├── enemy.py
+│   │   ├── projectile.py
+│   │   └── experiencePoint.py
+│   │
+│   ├── views/
+│   │   ├── gameView.py
+│   │   └── menu_view.py
+│   │
+│   ├── controllers/
+│   │   └── game_controller.py
+│   │
+│   └── utils/
+│       └── collision.py
+│
+├── main.py
+└── requirements.txt
