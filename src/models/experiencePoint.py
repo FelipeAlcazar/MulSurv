@@ -6,9 +6,11 @@ class ExperiencePoint:
         self.y = y
         self.value = value
         self.size = 10
+        self.image = pygame.image.load('assets/images/experience_point.png')
+        self.image = pygame.transform.scale(self.image, (self.size * 3, self.size * 3))
 
     def draw(self, screen):
-        pygame.draw.circle(screen, (0, 255, 0), (self.x, self.y), self.size)
+        screen.blit(self.image, (self.x - self.size, self.y - self.size))
 
     def move(self):
         pass  # Experience points don't move

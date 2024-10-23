@@ -6,7 +6,7 @@ from src.models.weapon import Weapon
 class Player(Character):
     predefined_characters = {
         "DefaultPlayer": {
-            "image_path": 'assets/images/player_image.png',
+            "image_path": 'assets/images/default_character.png',
             "weapon_name": "Gun",
             "size": 60,
             "speed": 5

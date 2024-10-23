@@ -1,6 +1,6 @@
 import pygame
 from src.models.player import Player
-from src.models.enemy import SpecificEnemy
+from src.models.enemy import SpecificEnemy, CameraEnemy
 from src.models.experiencePoint import ExperiencePoint
 from src.models.upgrade import available_upgrades
 from src.utils.collision import check_collision
@@ -150,7 +150,11 @@ class GameController:
             if (now // self.blink_interval) % 2 == 0:
                 self.screen.blit(arrow, arrow_rect)
             if now - spawn_time > self.spawn_delay:
-                self.enemies.append(SpecificEnemy(spawn_x, spawn_y))
+                if self.enemies_defeated < 10:
+                    enemy_type = SpecificEnemy
+                else:
+                    enemy_type = CameraEnemy
+                self.enemies.append(enemy_type(spawn_x, spawn_y))
                 self.spawn_indicators.remove(indicator)
 
         self.game_view.show_score(self.score)

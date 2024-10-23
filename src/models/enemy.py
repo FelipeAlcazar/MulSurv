@@ -3,14 +3,38 @@ import random
 import math
 
 class Enemy:
-    def __init__(self, x, y, size, speed, image_path, experience):
-        self.size = size
+    predefined_enemies = {
+        "DefaultEnemy": {
+            "image_path": 'assets/images/floppy_disk_enemy.png',
+            "size": 35,
+            "image_size": 85,
+            "speed": 2
+        },
+        "CameraEnemy": {
+            "image_path": 'assets/images/camera_enemy.png',
+            "size": 50,
+            "image_size": 100,
+            "speed": 4
+        }
+    }
+
+    def __init__(self, x, y, enemy_type="DefaultEnemy"):
+        if enemy_type in self.predefined_enemies:
+            enemy_info = self.predefined_enemies[enemy_type]
+            self.size = enemy_info["size"]
+            self.image_size = enemy_info["image_size"]
+            self.speed = enemy_info["speed"]
+            self.image = pygame.image.load(enemy_info["image_path"])
+            self.image = pygame.transform.scale(self.image, (self.image_size, self.image_size))
+        else:
+            self.size = 40
+            self.image_size = 60
+            self.speed = 2
+            self.image = pygame.image.load('assets/images/enemy_image.png')
+            self.image = pygame.transform.scale(self.image, (self.image_size, self.image_size))
+        
         self.x = x
         self.y = y
-        self.speed = speed
-        self.image = pygame.image.load(image_path)
-        self.image = pygame.transform.scale(self.image, (self.size, self.size))
-        self.experience = experience
 
     def draw(self, screen):
         screen.blit(self.image, (self.x, self.y))
@@ -24,6 +48,13 @@ class Enemy:
         self.x += direction_x * self.speed
         self.y += direction_y * self.speed
 
+    def get_bounding_box(self):
+        return pygame.Rect(self.x, self.y, self.size, self.size)
+
 class SpecificEnemy(Enemy):
     def __init__(self, x, y):
-        super().__init__(x, y, 40, 2, 'assets/images/enemy_image.png', random.randint(10, 20))
+        super().__init__(x, y, "DefaultEnemy")
+
+class CameraEnemy(Enemy):
+    def __init__(self, x, y):
+        super().__init__(x, y, "CameraEnemy")
