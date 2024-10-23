@@ -3,7 +3,6 @@ import pygame
 class GameView:
     def __init__(self, screen):
         self.screen = screen
-
     def show_score(self, score):
         font = pygame.font.Font(None, 36)
         score_text = font.render(f'Score: {score}', True, (255, 255, 255))
