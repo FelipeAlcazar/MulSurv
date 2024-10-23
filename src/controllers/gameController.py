@@ -21,18 +21,21 @@ class GameController:
         self.experience_points = []
         self.spawn_indicators = []
         self.last_spawn_time = pygame.time.get_ticks()
-        self.spawn_delay = 2000  # milliseconds
-        self.blink_interval = 200  # milliseconds
+        self.spawn_delay = 2000  # Milisegundos, cambiará por nivel
+        self.blink_interval = 200  # Milisegundos
         self.score = 0
         self.start_time = pygame.time.get_ticks()
         self.running = True
         self.upgrade_menu_active = False
         self.options = []
         self.selected_option = 0
+        self.level = 1  # Inicializar el nivel en 1
+        self.enemies_to_defeat = 10  # Enemigos que deben ser eliminados por nivel
+        self.enemies_defeated = 0  # Contador de enemigos derrotados
 
     def init_display(self):
         info = pygame.display.Info()
-        self.screen = pygame.display.set_mode((info.current_w, info.current_h), pygame.RESIZABLE)  # Set windowed maximized mode with window controls
+        self.screen = pygame.display.set_mode((info.current_w, info.current_h), pygame.RESIZABLE)
         pygame.display.set_caption("Multimedia Game")
 
     def run(self):
@@ -93,10 +96,19 @@ class GameController:
                 if check_collision(projectile, enemy):
                     self.enemies.remove(enemy)
                     self.projectiles.remove(projectile)
+                    self.enemies_defeated += 1  # Aumenta el contador de derrotas
                     self.score += 1
-                    if random.random() < 0.5:
-                        self.experience_points.append(ExperiencePoint(enemy.x, enemy.y, enemy.experience))
+
+                    # Sistema de experiencia aleatorio
+                    if random.random() < 0.7:  # 70% de probabilidad de soltar experiencia
+                        exp_value = random.randint(0, 3)  # Entre 0 y 3 puntos de experiencia
+                        if exp_value > 0:
+                            self.experience_points.append(ExperiencePoint(enemy.x, enemy.y, exp_value))
                     break
+
+        # Si se derrotaron suficientes enemigos, subir al siguiente nivel
+        if self.enemies_defeated >= self.enemies_to_defeat:
+            self.next_level()
 
         for exp in self.experience_points:
             exp.draw(self.screen)
@@ -144,8 +156,15 @@ class GameController:
         self.game_view.show_score(self.score)
         self.game_view.show_time(self.start_time)
 
+    def next_level(self):
+        """Sube al siguiente nivel, ajusta dificultad y reinicia contadores."""
+        self.level += 1
+        self.enemies_defeated = 0
+        self.enemies_to_defeat += 5  # Aumenta la cantidad de enemigos para el siguiente nivel
+        self.spawn_delay = max(500, self.spawn_delay - 200)  # Aumenta la frecuencia de spawn
+
     def get_upgrade_options(self):
-        # Select a subset of available upgrades
+        # Seleccionar un subconjunto de mejoras disponibles
         options = random.sample(available_upgrades, 3)
         selected_option = 0
         return options, selected_option
