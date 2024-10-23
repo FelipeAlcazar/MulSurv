@@ -23,37 +23,36 @@ class Player(Character):
             weapon = Weapon("Gun")
             super().__init__(info.current_w // 2, info.current_h // 2, 60, 5, 'assets/images/player_image.png', weapon)
         
-        self.direction = pygame.K_RIGHT
+        self.direction = (0,0)
         self.weapon = weapon
         self.last_shot = pygame.time.get_ticks()
         self.experience = 0
         self.level = 1
         self.experience_to_next_level = 100
-
+    
     def move(self, keys):
-        super().move(keys)
+        dx, dy = 0, 0
         if keys[pygame.K_LEFT]:
-            self.direction = pygame.K_LEFT
-        elif keys[pygame.K_RIGHT]:
-            self.direction = pygame.K_RIGHT
-        elif keys[pygame.K_UP]:
-            self.direction = pygame.K_UP
-        elif keys[pygame.K_DOWN]:
-            self.direction = pygame.K_DOWN
+            dx -= 1
+        if keys[pygame.K_RIGHT]:
+            dx += 1
+        if keys[pygame.K_UP]:
+            dy -= 1
+        if keys[pygame.K_DOWN]:
+            dy += 1
+        self.direction = (dx, dy)
+        # Actualizar posición del jugador
+        self.x += dx * self.speed
+        self.y += dy * self.speed
 
     def shoot(self):
         now = pygame.time.get_ticks()
         if now - self.last_shot > self.weapon.shoot_delay:
             self.last_shot = now
             self.weapon.play_sound()
-            if self.direction == pygame.K_LEFT:
-                return Projectile(self.x, self.y + self.size // 2, -10, 0)
-            elif self.direction == pygame.K_RIGHT:
-                return Projectile(self.x + self.size, self.y + self.size // 2, 10, 0)
-            elif self.direction == pygame.K_UP:
-                return Projectile(self.x + self.size // 2, self.y, 0, -10)
-            elif self.direction == pygame.K_DOWN:
-                return Projectile(self.x + self.size // 2, self.y + self.size, 0, 10)
+            dx, dy = self.direction
+            if dx != 0 or dy != 0:
+                return Projectile(self.x + self.size // 2, self.y + self.size // 2, dx * 10, dy * 10)
         return None
 
     def draw_experience_bar(self, screen):
