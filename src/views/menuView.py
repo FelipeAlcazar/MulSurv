@@ -3,6 +3,9 @@ import pygame
 class MenuView:
     def __init__(self, screen):
         self.screen = screen
+        pygame.init()
+        info = pygame.display.Info()
+        
         self.background_image = pygame.image.load('assets/images/background.png')
         self.background_image = pygame.transform.scale(self.background_image, (self.screen.get_width(), self.screen.get_height()))
         
@@ -19,6 +22,10 @@ class MenuView:
         
         # Escalar la imagen del logo
         self.title_image = pygame.transform.scale(self.title_image, (new_logo_width, new_logo_height))
+
+        # Hide the cursor and grab the input focus
+        pygame.mouse.set_visible(False)
+        pygame.event.set_grab(True)
 
     def draw_rounded_rect(self, surface, color, rect, corner_radius):
         """ Draw a rectangle with rounded corners. """
