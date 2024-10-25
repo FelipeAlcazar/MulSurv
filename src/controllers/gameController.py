@@ -21,7 +21,7 @@ class GameController:
         self.experience_points = []
         self.spawn_indicators = []
         self.last_spawn_time = pygame.time.get_ticks()
-        self.spawn_delay = 2000  # Milisegundos, cambiará por nivel
+        self.spawn_delay = 2000  # Milisegundos, cambiará con la dificultad
         self.blink_interval = 200  # Milisegundos
         self.score = 0
         self.start_time = pygame.time.get_ticks()
@@ -29,9 +29,6 @@ class GameController:
         self.upgrade_menu_active = False
         self.options = []
         self.selected_option = 0
-        self.level = 1  # Inicializar el nivel en 1
-        self.enemies_to_defeat = 10  # Enemigos que deben ser eliminados por nivel
-        self.enemies_defeated = 0  # Contador de enemigos derrotados
 
     def init_display(self):
         info = pygame.display.Info()
@@ -96,7 +93,6 @@ class GameController:
                 if check_collision(projectile, enemy):
                     self.enemies.remove(enemy)
                     self.projectiles.remove(projectile)
-                    self.enemies_defeated += 1  # Aumenta el contador de derrotas
                     self.score += 1
 
                     # Sistema de experiencia aleatorio
@@ -105,10 +101,6 @@ class GameController:
                         if exp_value > 0:
                             self.experience_points.append(ExperiencePoint(enemy.x, enemy.y, exp_value))
                     break
-
-        # Si se derrotaron suficientes enemigos, subir al siguiente nivel
-        if self.enemies_defeated >= self.enemies_to_defeat:
-            self.next_level()
 
         for exp in self.experience_points:
             exp.draw(self.screen)
@@ -150,22 +142,13 @@ class GameController:
             if (now // self.blink_interval) % 2 == 0:
                 self.screen.blit(arrow, arrow_rect)
             if now - spawn_time > self.spawn_delay:
-                if self.enemies_defeated < 10:
-                    enemy_type = SpecificEnemy
-                else:
-                    enemy_type = CameraEnemy
+                # Lógica simple para el tipo de enemigo
+                enemy_type = random.choice([SpecificEnemy, CameraEnemy])
                 self.enemies.append(enemy_type(spawn_x, spawn_y))
                 self.spawn_indicators.remove(indicator)
 
         self.game_view.show_score(self.score)
         self.game_view.show_time(self.start_time)
-
-    def next_level(self):
-        """Sube al siguiente nivel, ajusta dificultad y reinicia contadores."""
-        self.level += 1
-        self.enemies_defeated = 0
-        self.enemies_to_defeat += 5  # Aumenta la cantidad de enemigos para el siguiente nivel
-        self.spawn_delay = max(500, self.spawn_delay - 200)  # Aumenta la frecuencia de spawn
 
     def get_upgrade_options(self):
         # Seleccionar un subconjunto de mejoras disponibles
