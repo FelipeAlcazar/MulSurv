@@ -97,7 +97,7 @@ class GameController:
 
                     # Sistema de experiencia aleatorio
                     if random.random() < 0.7:  # 70% de probabilidad de soltar experiencia
-                        exp_value = random.randint(0, 3)  # Entre 0 y 3 puntos de experiencia
+                        exp_value = random.randint(5, 15)  # Entre 0 y 3 puntos de experiencia
                         if exp_value > 0:
                             self.experience_points.append(ExperiencePoint(enemy.x, enemy.y, exp_value))
                     break
