@@ -6,14 +6,14 @@ class Enemy:
     predefined_enemies = {
         "DefaultEnemy": {
             "image_path": 'assets/images/floppy_disk_enemy.png',
-            "size": 35,
-            "image_size": 85,
+            "size": 50,
+            "image_size": 50,
             "speed": 2
         },
         "CameraEnemy": {
             "image_path": 'assets/images/camera_enemy.png',
-            "size": 50,
-            "image_size": 100,
+            "size": 30,
+            "image_size": 30,
             "speed": 4
         }
     }
