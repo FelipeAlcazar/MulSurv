@@ -3,6 +3,7 @@ import pygame
 class GameView:
     def __init__(self, screen):
         self.screen = screen
+
     def show_score(self, score):
         font = pygame.font.Font(None, 36)
         score_text = font.render(f'Score: {score}', True, (255, 255, 255))
@@ -18,9 +19,8 @@ class GameView:
         self.screen.blit(time_text, time_rect)
 
     def show_upgrade_options(self, options, selected_option):
-        # Draw a semi-transparent overlay
         overlay = pygame.Surface((self.screen.get_width(), self.screen.get_height()), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 128))  # Set transparency level
+        overlay.fill((0, 0, 0, 128))
         self.screen.blit(overlay, (0, 0))
 
         upgrade_font = pygame.font.Font(None, 74)

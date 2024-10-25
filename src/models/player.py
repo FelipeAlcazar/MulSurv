@@ -16,7 +16,7 @@ class Player(Character):
 
     def __init__(self, character_name="DefaultPlayer"):
         info = pygame.display.Info()
-        if character_name in self.predefined_characters:
+        if (character_name in self.predefined_characters):
             character_info = self.predefined_characters[character_name]
             weapon = Weapon(character_info["weapon_name"])
             super().__init__(info.current_w // 2, info.current_h // 2, character_info["size"], character_info["speed"], character_info["image_path"], weapon)
@@ -65,11 +65,26 @@ class Player(Character):
         return None
 
     def draw_experience_bar(self, screen):
+        # Get screen dimensions
+        screen_width = screen.get_width()
+        screen_height = screen.get_height()
+
+        # Draw player level
+        font = pygame.font.Font(None, 36)
+        level_text = font.render(f'Lvl. {self.level}', True, (255, 255, 255))
+        level_text_rect = level_text.get_rect()
         bar_width = 200
         bar_height = 20
+        level_text_x = (screen_width - level_text_rect.width) // 2
+        level_text_y = screen_height - bar_height - level_text_rect.height - 20
+        screen.blit(level_text, (level_text_x, level_text_y))
+
+        # Draw experience bar
         fill = (self.experience / self.experience_to_next_level) * bar_width
-        pygame.draw.rect(screen, (255, 255, 255), (10, 40, bar_width, bar_height), 2)
-        pygame.draw.rect(screen, (0, 255, 0), (10, 40, fill, bar_height))
+        bar_x = (screen_width - bar_width) // 2
+        bar_y = screen_height - bar_height - 10
+        pygame.draw.rect(screen, (255, 255, 255), (bar_x, bar_y, bar_width, bar_height), 2)
+        pygame.draw.rect(screen, (0, 255, 0), (bar_x, bar_y, fill, bar_height))
 
     def change_weapon(self, new_weapon_name):
         self.weapon = Weapon(new_weapon_name)
