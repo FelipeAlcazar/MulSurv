@@ -111,12 +111,14 @@ class GameController:
                     if random.random() < 0.7:
                         exp_value = random.randint(10, 30)
                         if exp_value > 0:
-                            self.experience_points.append(ExperiencePoint(enemy.x, enemy.y, exp_value))
+                            self.experience_points.append(ExperiencePoint(enemy.x, enemy.y, exp_value, pygame.time.get_ticks()))
                     break
 
-        for exp in self.experience_points:
-            exp.draw(self.screen)
-            if check_collision(self.player, exp):
+        # Optimize experience points handling
+        for exp in self.experience_points[:]:
+            if not exp.draw(self.screen):
+                self.experience_points.remove(exp)
+            elif check_collision(self.player, exp):
                 self.player.experience += exp.value
                 self.experience_points.remove(exp)
                 if self.player.experience >= self.player.experience_to_next_level:
