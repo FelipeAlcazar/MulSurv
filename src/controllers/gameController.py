@@ -47,12 +47,17 @@ class GameController:
         pygame.mouse.set_visible(False)
 
         while self.running:
-            self.screen.fill((0, 0, 0))
+            self.screen.fill((0, 0, 0))  # Rellenar la pantalla con negro
+
+            # Dibujar la imagen de fondo
+            self.screen.blit(self.background_image, (0, 0))  # Dibujar la imagen de fondo en la pantalla
+
             self.handle_events()
             if not self.upgrade_menu_active:
                 self.update_game()
             else:
                 self.game_view.show_upgrade_options(self.options, self.selected_option)
+
             pygame.display.update()
             self.clock.tick(60)  # Controlar FPS
 
