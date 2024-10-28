@@ -33,6 +33,9 @@ class GameController:
         self.enemies_to_defeat = 10  # Enemigos que deben ser eliminados por nivel
         self.enemies_defeated = 0  # Contador de enemigos derrotados
 
+        # Cargar imagen de fondo
+        self.background_image = pygame.image.load('assets/images/background_game.png').convert()
+
     def init_display(self):
         info = pygame.display.Info()
         self.screen = pygame.display.set_mode((info.current_w, info.current_h), pygame.RESIZABLE)
@@ -71,6 +74,9 @@ class GameController:
                         self.upgrade_menu_active = False
 
     def update_game(self):
+        # Dibujar el fondo antes de cualquier otro objeto
+        self.screen.blit(self.background_image, (0, 0))
+
         keys = pygame.key.get_pressed()
         self.player.move(keys)
         self.player.draw(self.screen)
