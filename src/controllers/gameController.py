@@ -12,6 +12,7 @@ import math
 class GameController:
     def __init__(self):
         self.init_display()
+        pygame.mouse.set_visible(False)
         self.clock = pygame.time.Clock()
         self.menu_view = MenuView(self.screen)
         self.game_view = GameView(self.screen)
@@ -21,7 +22,7 @@ class GameController:
         self.experience_points = []
         self.spawn_indicators = []
         self.last_spawn_time = pygame.time.get_ticks()
-        self.spawn_delay = 2000  # Milisegundos, cambiará por nivel
+        self.spawn_delay = 2000  # Milisegundos, cambiará con la dificultad
         self.blink_interval = 200  # Milisegundos
         self.score = 0
         self.start_time = pygame.time.get_ticks()
@@ -29,9 +30,9 @@ class GameController:
         self.upgrade_menu_active = False
         self.options = []
         self.selected_option = 0
-        self.level = 1  # Inicializar el nivel en 1
-        self.enemies_to_defeat = 10  # Enemigos que deben ser eliminados por nivel
-        self.enemies_defeated = 0  # Contador de enemigos derrotados
+        self.pointer_image = pygame.image.load('assets/images/pointer.png')  # Load pointer image
+        self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))  # Scale down pointer image
+        self.enemy_switch_interval = 30000  # 30 seconds in milliseconds
 
         # Cargar imagen de fondo
         self.background_image = pygame.image.load('assets/images/background_game.png').convert()
@@ -74,15 +75,13 @@ class GameController:
                         self.upgrade_menu_active = False
 
     def update_game(self):
-        # Dibujar el fondo antes de cualquier otro objeto
-        self.screen.blit(self.background_image, (0, 0))
-
         keys = pygame.key.get_pressed()
         self.player.move(keys)
         self.player.draw(self.screen)
         self.player.draw_experience_bar(self.screen)
 
-        projectile = self.player.shoot()
+        mouse_pos = pygame.mouse.get_pos()
+        projectile = self.player.shoot(mouse_pos)
         if projectile:
             self.projectiles.append(projectile)
 
@@ -102,19 +101,13 @@ class GameController:
                 if check_collision(projectile, enemy):
                     self.enemies.remove(enemy)
                     self.projectiles.remove(projectile)
-                    self.enemies_defeated += 1  # Aumenta el contador de derrotas
                     self.score += 1
 
-                    # Sistema de experiencia aleatorio
-                    if random.random() < 0.7:  # 70% de probabilidad de soltar experiencia
-                        exp_value = random.randint(0, 3)  # Entre 0 y 3 puntos de experiencia
+                    if random.random() < 0.7:
+                        exp_value = random.randint(10, 30)
                         if exp_value > 0:
                             self.experience_points.append(ExperiencePoint(enemy.x, enemy.y, exp_value))
                     break
-
-        # Si se derrotaron suficientes enemigos, subir al siguiente nivel
-        if self.enemies_defeated >= self.enemies_to_defeat:
-            self.next_level()
 
         for exp in self.experience_points:
             exp.draw(self.screen)
@@ -124,10 +117,12 @@ class GameController:
                 if self.player.experience >= self.player.experience_to_next_level:
                     self.player.experience = 0
                     self.player.level += 1
+                    self.player.experience_to_next_level = self.player.calculate_experience_to_next_level()
                     self.upgrade_menu_active = True
                     self.options, self.selected_option = self.get_upgrade_options()
 
         now = pygame.time.get_ticks()
+        elapsed_time = now - self.start_time
         if now - self.last_spawn_time > self.spawn_delay:
             self.last_spawn_time = now
             side = random.choice(['top', 'bottom', 'left', 'right'])
@@ -156,25 +151,34 @@ class GameController:
             if (now // self.blink_interval) % 2 == 0:
                 self.screen.blit(arrow, arrow_rect)
             if now - spawn_time > self.spawn_delay:
-                if self.enemies_defeated < 10:
+                if elapsed_time < self.enemy_switch_interval:
                     enemy_type = SpecificEnemy
                 else:
                     enemy_type = CameraEnemy
                 self.enemies.append(enemy_type(spawn_x, spawn_y))
                 self.spawn_indicators.remove(indicator)
 
+        # Calculate angle between player and mouse position
+        dx = mouse_pos[0] - (self.player.x + self.player.size // 2)
+        dy = mouse_pos[1] - (self.player.y + self.player.size // 2)
+        angle = math.degrees(math.atan2(dy, dx))
+
+        # Rotate pointer image
+        rotated_pointer = pygame.transform.rotate(self.pointer_image, -angle + 90)  # Adjust rotation to account for upward orientation
+
+        # Position the pointer image further in front of the player
+        pointer_distance = 50  # Increased distance from the player
+        pointer_x = self.player.x + self.player.size // 2 + math.cos(math.radians(angle)) * pointer_distance
+        pointer_y = self.player.y + self.player.size // 2 + math.sin(math.radians(angle)) * pointer_distance
+        pointer_rect = rotated_pointer.get_rect(center=(pointer_x, pointer_y))
+
+        # Draw rotated pointer image
+        self.screen.blit(rotated_pointer, pointer_rect)
+
         self.game_view.show_score(self.score)
         self.game_view.show_time(self.start_time)
 
-    def next_level(self):
-        """Sube al siguiente nivel, ajusta dificultad y reinicia contadores."""
-        self.level += 1
-        self.enemies_defeated = 0
-        self.enemies_to_defeat += 5  # Aumenta la cantidad de enemigos para el siguiente nivel
-        self.spawn_delay = max(500, self.spawn_delay - 200)  # Aumenta la frecuencia de spawn
-
     def get_upgrade_options(self):
-        # Seleccionar un subconjunto de mejoras disponibles
         options = random.sample(available_upgrades, 3)
         selected_option = 0
         return options, selected_option
