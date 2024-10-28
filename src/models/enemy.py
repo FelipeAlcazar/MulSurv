@@ -38,6 +38,8 @@ class Enemy:
 
     def draw(self, screen):
         screen.blit(self.image, (self.x, self.y))
+        bounding_box = self.get_bounding_box()
+        pygame.draw.rect(screen, (255, 0, 0), bounding_box, 2)  # Draw hitbox with red color and 2px thickness
 
     def move_towards_player(self, player):
         direction_x = player.x - self.x
