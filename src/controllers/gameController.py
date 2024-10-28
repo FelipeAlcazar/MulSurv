@@ -36,6 +36,7 @@ class GameController:
 
         # Cargar imagen de fondo
         self.background_image = pygame.image.load('assets/images/background_game.png').convert()
+        self.background_image = pygame.transform.scale(self.background_image, (self.screen.get_width(), self.screen.get_height()))
 
     def init_display(self):
         info = pygame.display.Info()

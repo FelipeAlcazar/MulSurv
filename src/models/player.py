@@ -46,8 +46,20 @@ class Player(Character):
         if keys[pygame.K_s]:
             dy += 1
         self.direction = (dx, dy)
-        self.x += dx * self.speed
-        self.y += dy * self.speed
+        
+        new_x = self.x + dx * self.speed
+        new_y = self.y + dy * self.speed
+        
+        # Get screen dimensions
+        info = pygame.display.Info()
+        screen_width = info.current_w
+        screen_height = info.current_h
+        
+        # Ensure the player stays within the screen boundaries
+        if 0 <= new_x <= screen_width - self.size:
+            self.x = new_x
+        if 0 <= new_y <= screen_height - self.size:
+            self.y = new_y
 
     def shoot(self, mouse_pos):
         now = pygame.time.get_ticks()
