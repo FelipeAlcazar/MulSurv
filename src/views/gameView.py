@@ -3,6 +3,7 @@ import pygame
 class GameView:
     def __init__(self, screen):
         self.screen = screen
+
     def show_score(self, score):
         font = pygame.font.Font(None, 36)
         score_text = font.render(f'Score: {score}', True, (255, 255, 255))
@@ -22,8 +23,18 @@ class GameView:
         overlay = pygame.Surface((self.screen.get_width(), self.screen.get_height()), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 128))  # Set transparency level
         self.screen.blit(overlay, (0, 0))
+
         upgrade_font = pygame.font.Font(None, 74)
         option_texts = [upgrade_font.render(option.name, True, (255, 255, 255)) for option in options]
-        option_rects = [text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2 + i * 100)) for i, text in enumerate(option_texts)]
-        for rect, text in zip(option_rects, option_texts):
+
+        # Calculate the starting y-coordinate to center the options
+        total_height = len(option_texts) * 100
+        start_y = (self.screen.get_height() - total_height) // 2
+
+        option_rects = [text.get_rect(center=(self.screen.get_width() // 2, start_y + i * 100)) for i, text in enumerate(option_texts)]
+
+        for i, (rect, text) in enumerate(zip(option_rects, option_texts)):
+            if i == selected_option:
+                # Highlight the selected option
+                pygame.draw.rect(self.screen, (255, 255, 0), rect.inflate(20, 20), 3)  # Draw a yellow rectangle around the selected option
             self.screen.blit(text, rect)
