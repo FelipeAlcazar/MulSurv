@@ -33,7 +33,6 @@ class GameController:
         self.pointer_image = pygame.image.load('assets/images/pointer.png')  # Load pointer image
         self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))  # Scale down pointer image
         self.enemy_switch_interval = 30000  # 30 seconds in milliseconds
-        self.player_health = 2  # Vida inicial del jugador
 
         # Cargar imagen de fondo
         self.background_image = pygame.image.load('assets/images/background_game.png').convert()
@@ -86,6 +85,7 @@ class GameController:
         self.player.move(keys)
         self.player.draw(self.screen)
         self.player.draw_experience_bar(self.screen)
+        self.player.update()
         
 
         mouse_pos = pygame.mouse.get_pos()
@@ -103,22 +103,20 @@ class GameController:
         for enemy in self.enemies:
             enemy.move_towards_player(self.player)
             enemy.draw(self.screen)
-
             if check_collision(self.player, enemy):
-                if self.player_health == 1:
-                    print("¡Juego Terminado!")
-                    self.running = False
-                else:
-                    self.player_health -= 1
-                    self.enemies.remove(enemy)
-                    self.player.invincible_until = pygame.time.get_ticks() + 20000  # Invencible por 2 segundos
-
+                if not self.player.invincible:
+                    if self.player.health == 1:
+                        print("¡Juego Terminado!")
+                        self.running = False
+                    else:
+                        self.player.take_damage()
+                        self.enemies.remove(enemy)
+    
             for projectile in self.projectiles:
                 if check_collision(projectile, enemy):
                     self.enemies.remove(enemy)
                     self.projectiles.remove(projectile)
                     self.score += 1
-
                     if random.random() < 0.7:
                         exp_value = random.randint(10, 30)
                         if exp_value > 0:
@@ -195,7 +193,7 @@ class GameController:
 
         self.game_view.show_score(self.score)
         self.game_view.show_time(self.start_time)
-        self.game_view.show_health(self.player_health)
+        self.game_view.show_health(self.player.health)
 
     def get_upgrade_options(self):
         options = random.sample(available_upgrades, 3)
