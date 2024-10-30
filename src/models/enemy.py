@@ -15,6 +15,12 @@ class Enemy:
             "size": 30,
             "image_size": 30,
             "speed": 4
+        },
+        "ControllerEnemy": {
+            "image_path": 'assets/images/controller_enemy.png',
+            "size": 70,
+            "image_size": 70,
+            "speed": 3
         }
     }
 
@@ -53,6 +59,10 @@ class Enemy:
     def get_bounding_box(self):
         return pygame.Rect(self.x, self.y, self.size, self.size)
 
+    def take_damage(self):
+        # Default behavior: remove enemy immediately
+        return True
+
 class SpecificEnemy(Enemy):
     def __init__(self, x, y):
         super().__init__(x, y, "DefaultEnemy")
@@ -60,3 +70,14 @@ class SpecificEnemy(Enemy):
 class CameraEnemy(Enemy):
     def __init__(self, x, y):
         super().__init__(x, y, "CameraEnemy")
+
+class ControllerEnemy(Enemy):
+    def __init__(self, x, y):
+        super().__init__(x, y, "ControllerEnemy")
+        self.health = 2  # Requires two shots to be killed
+
+    def take_damage(self):
+        self.health -= 1
+        if self.health <= 0:
+            return True  # Enemy should be removed
+        return False  # Enemy is still alive

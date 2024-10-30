@@ -1,8 +1,8 @@
 import pygame
 from src.models.player import Player
-from src.models.enemy import SpecificEnemy, CameraEnemy
+from src.models.enemy import SpecificEnemy, CameraEnemy, ControllerEnemy
 from src.models.experiencePoint import ExperiencePoint
-from src.models.upgrade import available_upgrades
+from src.models.upgrade import available_upgrades, decrease_speed
 from src.utils.collision import check_collision
 from src.views.gameView import GameView
 from src.views.menuView import MenuView
@@ -33,6 +33,7 @@ class GameController:
         self.pointer_image = pygame.image.load('assets/images/pointer.png')  # Load pointer image
         self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))  # Scale down pointer image
         self.enemy_switch_interval = 30000  # 30 seconds in milliseconds
+        self.controller_enemy_interval = 60000  # 60 seconds in milliseconds
 
         # Cargar imagen de fondo
         self.background_image = pygame.image.load('assets/images/background_game.png').convert()
@@ -114,13 +115,14 @@ class GameController:
     
             for projectile in self.projectiles:
                 if check_collision(projectile, enemy):
-                    self.enemies.remove(enemy)
+                    if enemy.take_damage():
+                        self.enemies.remove(enemy)
+                        self.score += 1
+                        if random.random() < 0.7:
+                            exp_value = random.randint(10, 30)
+                            if exp_value > 0:
+                                self.experience_points.append(ExperiencePoint(enemy.x, enemy.y, exp_value, pygame.time.get_ticks()))
                     self.projectiles.remove(projectile)
-                    self.score += 1
-                    if random.random() < 0.7:
-                        exp_value = random.randint(10, 30)
-                        if exp_value > 0:
-                            self.experience_points.append(ExperiencePoint(enemy.x, enemy.y, exp_value, pygame.time.get_ticks()))
                     break
 
         # Optimize experience points handling
@@ -169,8 +171,10 @@ class GameController:
             if now - spawn_time > self.spawn_delay:
                 if elapsed_time < self.enemy_switch_interval:
                     enemy_type = SpecificEnemy
-                else:
+                elif elapsed_time < self.controller_enemy_interval:
                     enemy_type = CameraEnemy
+                else:
+                    enemy_type = ControllerEnemy
                 self.enemies.append(enemy_type(spawn_x, spawn_y))
                 self.spawn_indicators.remove(indicator)
 
@@ -197,6 +201,9 @@ class GameController:
 
     def get_upgrade_options(self):
         options = random.sample(available_upgrades, 3)
+        for option in options:
+            if option.name == "Enemies less aggressive":
+                option.apply_upgrade = lambda player: decrease_speed(player, self.enemies
         selected_option = 0
         return options, selected_option
 
