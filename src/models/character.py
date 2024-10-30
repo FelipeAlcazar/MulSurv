@@ -9,6 +9,8 @@ class Character:
         self.image = pygame.image.load(image_path)
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
         self.weapon = weapon
+        self.health = 2
+        
 
     def draw(self, screen):
         screen.blit(self.image, (self.x, self.y))
@@ -22,3 +24,5 @@ class Character:
             self.y -= self.speed
         if keys[pygame.K_DOWN] and self.y < pygame.display.Info().current_h - self.size:
             self.y += self.speed
+    
+    

@@ -33,6 +33,7 @@ class GameController:
         self.pointer_image = pygame.image.load('assets/images/pointer.png')  # Load pointer image
         self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))  # Scale down pointer image
         self.enemy_switch_interval = 30000  # 30 seconds in milliseconds
+        self.player_health = 2  # Vida inicial del jugador
 
         # Cargar imagen de fondo
         self.background_image = pygame.image.load('assets/images/background_game.png').convert()
@@ -85,9 +86,13 @@ class GameController:
         self.player.move(keys)
         self.player.draw(self.screen)
         self.player.draw_experience_bar(self.screen)
+        
 
         mouse_pos = pygame.mouse.get_pos()
         projectile = self.player.shoot(mouse_pos)
+        
+        self.player.draw_experience_bar(self.screen)
+        
         if projectile:
             self.projectiles.append(projectile)
 
@@ -100,8 +105,13 @@ class GameController:
             enemy.draw(self.screen)
 
             if check_collision(self.player, enemy):
-                print("¡Juego Terminado!")
-                self.running = False
+                if self.player_health == 1:
+                    print("¡Juego Terminado!")
+                    self.running = False
+                else:
+                    self.player_health -= 1
+                    self.enemies.remove(enemy)
+                    self.player.invincible_until = pygame.time.get_ticks() + 20000  # Invencible por 2 segundos
 
             for projectile in self.projectiles:
                 if check_collision(projectile, enemy):
@@ -185,6 +195,7 @@ class GameController:
 
         self.game_view.show_score(self.score)
         self.game_view.show_time(self.start_time)
+        self.game_view.show_health(self.player_health)
 
     def get_upgrade_options(self):
         options = random.sample(available_upgrades, 3)

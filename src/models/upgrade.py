@@ -18,10 +18,14 @@ def change_weapon(player):
 
 def increase_speed(player):
     player.speed += 1
+    
+def increase_health(player):
+    player.health += 1
 
 # Define available upgrades
 available_upgrades = [
     Upgrade("Increase Fire Rate", "Decreases the time between shots.", increase_fire_rate),
     Upgrade("Change Weapon", "Changes the weapon to a gun.", change_weapon),
-    Upgrade("Increase Speed", "Increases the player's speed.", increase_speed)
+    Upgrade("Increase Speed", "Increases the player's speed.", increase_speed),
+    Upgrade("Increase Health", "Increases the player's health.", increase_health)
 ]

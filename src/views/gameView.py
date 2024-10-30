@@ -3,6 +3,13 @@ import pygame
 class GameView:
     def __init__(self, screen):
         self.screen = screen
+        self.background_image = pygame.image.load('assets/images/background_game.png')
+        self.background_image = pygame.transform.scale(self.background_image, (self.screen.get_width(), self.screen.get_height()))
+        self.heart_image = pygame.image.load('assets/images/heart.png')
+        self.heart_image = pygame.transform.scale(self.heart_image, (90, 90))  # Ajusta el tamaño del corazón
+
+    def draw_background(self):
+        self.screen.blit(self.background_image, (0, 0))
 
     def show_score(self, score):
         font = pygame.font.Font(None, 36)
@@ -18,6 +25,10 @@ class GameView:
         time_rect = time_text.get_rect(topright=(self.screen.get_width() - 10, 10))
         self.screen.blit(time_text, time_rect)
 
+    def show_health(self, health):
+        for i in range(health):
+            self.screen.blit(self.heart_image, (10 + i * 35, 50))  # Ajusta la posición de los corazones
+
     def show_upgrade_options(self, options, selected_option):
         # Draw a semi-transparent overlay
         overlay = pygame.Surface((self.screen.get_width(), self.screen.get_height()), pygame.SRCALPHA)
@@ -30,7 +41,6 @@ class GameView:
         # Calculate the starting y-coordinate to center the options
         total_height = len(option_texts) * 100
         start_y = (self.screen.get_height() - total_height) // 2
-
         option_rects = [text.get_rect(center=(self.screen.get_width() // 2, start_y + i * 100)) for i, text in enumerate(option_texts)]
 
         for i, (rect, text) in enumerate(zip(option_rects, option_texts)):
