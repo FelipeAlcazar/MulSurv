@@ -22,10 +22,17 @@ def increase_speed(player):
 def increase_health(player):
     player.health += 1
 
+def decrease_speed(player, enemies):
+    for enemy in enemies:
+        # Reduce la velocidad de cada enemigo
+        enemy.speed = max(1, enemy.speed - 1)
+   
+
 # Define available upgrades
 available_upgrades = [
     Upgrade("Increase Fire Rate", "Decreases the time between shots.", increase_fire_rate),
     Upgrade("Change Weapon", "Changes the weapon to a gun.", change_weapon),
     Upgrade("Increase Speed", "Increases the player's speed.", increase_speed),
-    Upgrade("Increase Health", "Increases the player's health.", increase_health)
+    Upgrade("Increase Health", "Increases the player's health.", increase_health),
+    Upgrade("Enemies less aggressive", "Decreases the speed of the enemies.", decrease_speed)
 ]

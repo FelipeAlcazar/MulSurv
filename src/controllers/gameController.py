@@ -203,7 +203,7 @@ class GameController:
         options = random.sample(available_upgrades, 3)
         for option in options:
             if option.name == "Enemies less aggressive":
-                option.apply_upgrade = lambda player: decrease_speed(player, self.enemies
+                option.apply_upgrade = lambda player: decrease_speed(player,self.enemies)
         selected_option = 0
         return options, selected_option
 
