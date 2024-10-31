@@ -34,6 +34,7 @@ class GameController:
         self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))  # Scale down pointer image
         self.enemy_switch_interval = 30000  # 30 seconds in milliseconds
         self.controller_enemy_interval = 60000  # 60 seconds in milliseconds
+        self.paused = False
 
         # Cargar imagen de fondo
         self.background_image = pygame.image.load('assets/images/background_game.png').convert()
@@ -45,41 +46,68 @@ class GameController:
         pygame.display.set_caption("Multimedia Game")
 
     def run(self):
-        self.menu_view.show_menu()
-        pygame.mouse.set_visible(False)
+            self.menu_view.show_menu()
+            pygame.mouse.set_visible(False)
 
-        while self.running:
-            self.screen.fill((0, 0, 0))  # Rellenar la pantalla con negro
+            while self.running:
+                self.screen.fill((0, 0, 0))
 
-            # Dibujar la imagen de fondo
-            self.screen.blit(self.background_image, (0, 0))  # Dibujar la imagen de fondo en la pantalla
+                # Dibujar la imagen de fondo
+                self.screen.blit(self.background_image, (0, 0))
 
-            self.handle_events()
-            if not self.upgrade_menu_active:
-                self.update_game()
-            else:
-                self.game_view.show_upgrade_options(self.options, self.selected_option)
+                self.handle_events()
+                if self.paused:
+                    self.show_pause_menu()  # Mostrar el menú de pausa si está pausado
+                elif not self.upgrade_menu_active:
+                    self.update_game()
+                else:
+                    self.game_view.show_upgrade_options(self.options, self.selected_option)
 
-            pygame.display.update()
-            self.clock.tick(60)  # Controlar FPS
+                pygame.display.update()
+                self.clock.tick(60)
 
-        pygame.quit()
+            pygame.quit()
 
     def handle_events(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
                     self.running = False
-                if self.upgrade_menu_active:
-                    if event.key == pygame.K_UP:
-                        self.selected_option = (self.selected_option - 1) % len(self.options)
-                    elif event.key == pygame.K_DOWN:
-                        self.selected_option = (self.selected_option + 1) % len(self.options)
-                    elif event.key == pygame.K_RETURN:
-                        self.apply_upgrade(self.options[self.selected_option])
-                        self.upgrade_menu_active = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.paused = not self.paused  # Alternar pausa
+                    elif self.paused:
+                        if event.key == pygame.K_UP:
+                            self.selected_option = (self.selected_option - 1) % 2
+                        elif event.key == pygame.K_DOWN:
+                            self.selected_option = (self.selected_option + 1) % 2
+                        elif event.key == pygame.K_RETURN:
+                            if self.selected_option == 0:  # "Resume" opción
+                                self.paused = False
+                            elif self.selected_option == 1:  # "Quit" opción
+                                self.running = False
+                    elif self.upgrade_menu_active:
+                        if event.key == pygame.K_UP:
+                            self.selected_option = (self.selected_option - 1) % len(self.options)
+                        elif event.key == pygame.K_DOWN:
+                            self.selected_option = (self.selected_option + 1) % len(self.options)
+                        elif event.key == pygame.K_RETURN:
+                            self.apply_upgrade(self.options[self.selected_option])
+                            self.upgrade_menu_active = False
+    
+    def show_pause_menu(self):
+        # Dibujar el fondo del menú de pausa
+        pause_font = pygame.font.Font(None, 74)
+        options_font = pygame.font.Font(None, 48)
+        options = ["Resume", "Quit"]
+
+        pause_text = pause_font.render("Paused", True, (255, 255, 255))
+        self.screen.blit(pause_text, (self.screen.get_width() // 2 - pause_text.get_width() // 2, 150))
+
+        for i, option in enumerate(options):
+            color = (255, 0, 0) if i == self.selected_option else (255, 255, 255)
+            option_text = options_font.render(option, True, color)
+            self.screen.blit(option_text, (self.screen.get_width() // 2 - option_text.get_width() // 2, 300 + i * 60))
+
 
     def update_game(self):
         keys = pygame.key.get_pressed()
