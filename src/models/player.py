@@ -11,7 +11,14 @@ class Player(Character):
             "weapon_name": "Gun",
             "size": 60,
             "speed": 5
-        }
+        },
+        "Mario": {
+            "image_path": 'assets/images/second_character.png',
+            "weapon_name": "Gun",
+            "size": 50,
+            "speed": 7
+        },
+        
     }
 
     def __init__(self, character_name="DefaultPlayer"):
