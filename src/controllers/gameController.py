@@ -6,6 +6,7 @@ from src.models.upgrade import available_upgrades, decrease_speed
 from src.utils.collision import check_collision
 from src.views.gameView import GameView
 from src.views.menuView import MenuView
+from src.utils.data_manager import load_data, save_data
 import random
 import math
 
@@ -25,10 +26,13 @@ class GameController:
         self.spawn_delay = 2000  # Milisegundos, cambiará con la dificultad
         self.blink_interval = 200  # Milisegundos
         self.score = 0
+        self.game_data = load_data()
+        self.coins = self.game_data.get("coins", 0)
         self.start_time = pygame.time.get_ticks()
         self.running = True
         self.upgrade_menu_active = False
         self.options = []
+        self.top_scores = self.game_data.get("scoreboard", [])
         self.selected_option = 0
         self.pointer_image = pygame.image.load('assets/images/pointer.png')  # Load pointer image
         self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))  # Scale down pointer image
@@ -46,27 +50,101 @@ class GameController:
         pygame.display.set_caption("Multimedia Game")
 
     def run(self):
-            self.menu_view.show_menu()
-            pygame.mouse.set_visible(False)
+        self.menu_view.show_menu()
+        pygame.mouse.set_visible(False)
 
-            while self.running:
-                self.screen.fill((0, 0, 0))
+        while self.running:
+            self.screen.fill((0, 0, 0))
+            
+            self.screen.blit(self.background_image, (0, 0))
 
-                # Dibujar la imagen de fondo
-                self.screen.blit(self.background_image, (0, 0))
+            # Lógica del juego y actualización de pantalla
+            self.handle_events()
+            if self.paused:
+                self.show_pause_menu()
+            elif not self.upgrade_menu_active:
+                self.update_game()
+            else:
+                self.game_view.show_upgrade_options(self.options, self.selected_option)
 
-                self.handle_events()
-                if self.paused:
-                    self.show_pause_menu()  # Mostrar el menú de pausa si está pausado
-                elif not self.upgrade_menu_active:
-                    self.update_game()
-                else:
-                    self.game_view.show_upgrade_options(self.options, self.selected_option)
+            pygame.display.update()
+            self.clock.tick(60)
 
-                pygame.display.update()
-                self.clock.tick(60)
+        self.end_game()
+        pygame.quit()
 
-            pygame.quit()
+    
+    def end_game(self):
+        """Finaliza el juego, añade monedas ganadas y actualiza el scoreboard si es necesario."""
+        self.coins += self.score
+        print(f"Partida finalizada. Has ganado {self.score} monedas.")
+
+        # Verificar si el score entra en el top 3
+        if self.update_scoreboard(self.score):
+            initials = self.enter_initials()
+            # Actualizar la última entrada en el top 3 con las iniciales del jugador
+            for entry in self.top_scores:
+                if entry["score"] == self.score and entry["initials"] == "":
+                    entry["initials"] = initials
+                    break
+
+        # Guardar cambios en JSON
+        self.game_data["scoreboard"] = self.top_scores
+        save_data(self.game_data)
+
+    
+    def update_scoreboard(self, score):
+        """Verifica si el score entra en el top 3 y prepara la entrada para iniciales si lo hace."""
+        # Añadir una entrada temporal con iniciales vacías si el score califica para el top 3
+        if len(self.top_scores) < 3 or score > self.top_scores[-1]["score"]:
+            self.top_scores.append({"initials": "", "score": score})  # Añadir puntaje temporal
+            self.top_scores = sorted(self.top_scores, key=lambda x: x["score"], reverse=True)[:3]
+            return True
+        return False
+    
+    def enter_initials(self):
+        """Pantalla para que el jugador ingrese sus iniciales y mostrar el top 3 actual."""
+        font_large = pygame.font.Font(None, 64)
+        font_small = pygame.font.Font(None, 48)
+        initials = ""
+        enter_initials = True
+
+        while enter_initials:
+            self.screen.fill((0, 0, 0))
+
+            # Mostrar el top 3 actual en la parte superior de la pantalla
+            scoreboard_text = font_large.render("Top 3 Scoreboard", True, (255, 255, 0))
+            self.screen.blit(scoreboard_text, (self.screen.get_width() // 2 - scoreboard_text.get_width() // 2, 100))
+
+            for i, entry in enumerate(self.top_scores):
+                initials_text = entry["initials"] if entry["initials"] else "---"
+                score_text = f"{initials_text}: {entry['score']}"
+                score_display = font_small.render(score_text, True, (255, 255, 255))
+                self.screen.blit(score_display, (self.screen.get_width() // 2 - score_display.get_width() // 2, 200 + i * 50))
+
+            # Mostrar el prompt para ingresar las iniciales
+            prompt_text = font_large.render("Enter Initials:", True, (255, 255, 255))
+            initials_text = font_large.render(initials, True, (255, 255, 255))
+            self.screen.blit(prompt_text, (self.screen.get_width() // 2 - prompt_text.get_width() // 2, 400))
+            self.screen.blit(initials_text, (self.screen.get_width() // 2 - initials_text.get_width() // 2, 500))
+
+            pygame.display.flip()
+
+            # Procesar eventos de teclado para las iniciales
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    enter_initials = False
+                    self.running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN and len(initials) == 3:
+                        enter_initials = False  # Terminar entrada de iniciales
+                    elif event.key == pygame.K_BACKSPACE and len(initials) > 0:
+                        initials = initials[:-1]  # Borrar el último carácter
+                    elif len(initials) < 3 and event.unicode.isalpha():
+                        initials += event.unicode.upper()  # Añadir letra en mayúscula
+
+        return initials if len(initials) == 3 else "AAA"
+
 
     def handle_events(self):
             for event in pygame.event.get():
