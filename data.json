@@ -13,6 +13,9 @@
             "score": 13
         }
     ],
-    "coins": 141,
-    "unlocked_characters": []
+    "coins": 41,
+    "unlocked_characters": [
+        "DefaultPlayer",
+        "Mario"
+    ]
 }

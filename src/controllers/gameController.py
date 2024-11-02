@@ -27,13 +27,13 @@ class GameController:
         self.spawn_delay = 2000  # Milisegundos, cambiará con la dificultad
         self.blink_interval = 200  # Milisegundos
         self.score = 0
-        self.game_data = load_data()
-        self.coins = self.game_data.get("coins", 0)
+        self.game_data = None
+        self.coins = None
         self.start_time = pygame.time.get_ticks()
         self.running = True
         self.upgrade_menu_active = False
         self.options = []
-        self.top_scores = self.game_data.get("scoreboard", [])
+        self.top_scores = None
         self.selected_option = 0
         self.pointer_image = pygame.image.load('assets/images/pointer.png')  # Load pointer image
         self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))  # Scale down pointer image
@@ -61,6 +61,10 @@ class GameController:
     def run(self):
         self.menu_view.show_menu()
         self.select_character()  # Selección de personaje antes del juego
+        self.game_data = load_data()
+        self.coins = self.game_data.get("coins", 0)
+        self.top_scores = self.game_data.get("scoreboard", [])
+        self.unlocked_characters = self.game_data.get("unlocked_characters", [])
 
         if not self.player:
             print("No character selected, exiting the game.")
