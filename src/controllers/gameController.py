@@ -7,6 +7,7 @@ from src.views.characterSelectionView import CharacterSelectionView
 from src.utils.collision import check_collision
 from src.views.gameView import GameView
 from src.views.menuView import MenuView
+from src.models.rock import Rock
 from src.utils.data_manager import load_data, save_data
 import random
 import math
@@ -65,7 +66,16 @@ class GameController:
         self.coins = self.game_data.get("coins", 0)
         self.top_scores = self.game_data.get("scoreboard", [])
         self.unlocked_characters = self.game_data.get("unlocked_characters", [])
-
+        self.rocks = []
+        num_rocks = random.randint(8, 20)
+        for _ in range(num_rocks):
+            while True:
+                rock = Rock(self.screen.get_width(), self.screen.get_height())
+                # Verificar que la roca no esté en la misma posición que el jugador
+                if not check_collision(self.player, rock):  # Implementar la función check_collision para verificar
+                    self.rocks.append(rock)
+                    break  # Salir del ciclo si la roca se genera en una posición válida
+        
         if not self.player:
             print("No character selected, exiting the game.")
             self.running = False
@@ -209,23 +219,33 @@ class GameController:
 
     def update_game(self):
         keys = pygame.key.get_pressed()
+        original_x, original_y = self.player.x, self.player.y    
         self.player.move(keys)
+        
+        for rock in self.rocks:
+            rock.draw(self.screen)
+            if check_collision(self.player, rock):
+                self.player.x, self.player.y = original_x, original_y  # Revertir posición si hay colisión
+
         self.player.draw(self.screen)
         self.player.draw_experience_bar(self.screen)
         self.player.update()
         
-
         mouse_pos = pygame.mouse.get_pos()
         projectile = self.player.shoot(mouse_pos)
-        
-        self.player.draw_experience_bar(self.screen)
         
         if projectile:
             self.projectiles.append(projectile)
 
-        for projectile in self.projectiles:
+        for projectile in self.projectiles[:]:  # Usar una copia de la lista para evitar problemas al eliminar
             projectile.move()
             projectile.draw(self.screen)
+
+            # Verificar colisiones entre proyectiles y rocas
+            for rock in self.rocks:
+                if check_collision(projectile, rock):
+                    self.projectiles.remove(projectile)  # Eliminar el disparo
+                    break  # Salir del bucle ya que el proyectil ha colisionado
 
         for enemy in self.enemies:
             enemy.move_towards_player(self.player)
@@ -238,8 +258,8 @@ class GameController:
                     else:
                         self.player.take_damage()
                         self.enemies.remove(enemy)
-    
-            for projectile in self.projectiles:
+
+            for projectile in self.projectiles[:]:  # Usar una copia de la lista
                 if check_collision(projectile, enemy):
                     if enemy.take_damage():
                         self.enemies.remove(enemy)
@@ -324,6 +344,7 @@ class GameController:
         self.game_view.show_score(self.score)
         self.game_view.show_time(self.start_time)
         self.game_view.show_health(self.player.health)
+
 
     def get_upgrade_options(self):
         options = random.sample(available_upgrades, 3)
