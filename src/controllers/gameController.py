@@ -3,6 +3,7 @@ from src.models.player import Player
 from src.models.enemy import SpecificEnemy, CameraEnemy, ControllerEnemy
 from src.models.experiencePoint import ExperiencePoint
 from src.models.upgrade import available_upgrades, decrease_speed
+from src.views.characterSelectionView import CharacterSelectionView 
 from src.utils.collision import check_collision
 from src.views.gameView import GameView
 from src.views.menuView import MenuView
@@ -17,7 +18,7 @@ class GameController:
         self.clock = pygame.time.Clock()
         self.menu_view = MenuView(self.screen)
         self.game_view = GameView(self.screen)
-        self.player = Player(character_name="DefaultPlayer")
+        self.player = None
         self.enemies = []
         self.projectiles = []
         self.experience_points = []
@@ -49,8 +50,22 @@ class GameController:
         self.screen = pygame.display.set_mode((info.current_w, info.current_h), pygame.RESIZABLE)
         pygame.display.set_caption("Multimedia Game")
 
+
+    def select_character(self):
+        """Muestra la pantalla de selección de personaje y asigna el personaje seleccionado."""
+        selection_view = CharacterSelectionView(self.screen)
+        selected_character_name = selection_view.run()
+        if selected_character_name:
+            self.player = Player(character_name=selected_character_name)
+
     def run(self):
         self.menu_view.show_menu()
+        self.select_character()  # Selección de personaje antes del juego
+
+        if not self.player:
+            print("No character selected, exiting the game.")
+            self.running = False
+            return
         pygame.mouse.set_visible(False)
 
         while self.running:
