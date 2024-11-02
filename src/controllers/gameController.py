@@ -109,6 +109,7 @@ class GameController:
 
         # Guardar cambios en JSON
         self.game_data["scoreboard"] = self.top_scores
+        self.game_data["coins"] = self.coins
         save_data(self.game_data)
 
     
