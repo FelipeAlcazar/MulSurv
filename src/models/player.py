@@ -38,6 +38,7 @@ class Player(Character):
         self.level = 1
         self.experience_to_next_level = self.calculate_experience_to_next_level()
         self.double_shoot_enabled = False
+        self.triple_shoot_enabled = False
 
 
     def calculate_experience_to_next_level(self):
@@ -89,6 +90,12 @@ class Player(Character):
                 direction_x2 = math.cos(angle + angle_offset)
                 direction_y2 = math.sin(angle + angle_offset)
                 projectile2 = Projectile(self.x + self.size // 2, self.y + self.size // 2, direction_x2 * 10, direction_y2 * 10)
+                if self.triple_shoot_enabled:
+                    angle_offset = -0.2
+                    direction_x2 = math.cos(angle + angle_offset)
+                    direction_y2 = math.sin(angle + angle_offset)
+                    projectile3 = Projectile(self.x + self.size // 2, self.y + self.size // 2, direction_x2 * 10, direction_y2 * 10)
+                    return (projectile1, projectile2, projectile3)        
                 return (projectile1, projectile2)
             return projectile1
         return None

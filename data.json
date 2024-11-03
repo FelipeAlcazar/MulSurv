@@ -2,18 +2,18 @@
     "scoreboard": [
         {
             "initials": "JPG",
+            "score": 94
+        },
+        {
+            "initials": "JPG",
             "score": 37
         },
         {
             "initials": "JPG",
             "score": 33
-        },
-        {
-            "initials": "JPG",
-            "score": 27
         }
     ],
-    "coins": 310,
+    "coins": 417,
     "unlocked_characters": [
         "DefaultPlayer",
         "Mario"

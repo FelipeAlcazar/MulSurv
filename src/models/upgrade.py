@@ -29,6 +29,9 @@ def decrease_speed(player, enemies):
 
 def double_shoot(player):
     player.double_shoot_enabled = True
+
+def triple_shoot(player):
+    player.triple_shoot_enabled = True
    
 
 # Define available upgrades
@@ -38,5 +41,6 @@ available_upgrades = [
     Upgrade("Increase Speed", "Increases the player's speed.", increase_speed),
     Upgrade("Increase Health", "Increases the player's health.", increase_health),
     Upgrade("Enemies less aggressive", "Decreases the speed of the enemies.", decrease_speed),
-    Upgrade("Double Shoot", "Allows the player to shoot two bullets at once.", double_shoot)
+    Upgrade("Double Shoot", "Allows the player to shoot two bullets at once.", double_shoot),
+    Upgrade("Triple Shoot", "Allows the player to shoot three bullets at once.", triple_shoot)
 ]
