@@ -37,6 +37,8 @@ class Player(Character):
         self.experience = 0
         self.level = 1
         self.experience_to_next_level = self.calculate_experience_to_next_level()
+        self.double_shoot_enabled = False
+
 
     def calculate_experience_to_next_level(self):
         # Experience required increases by 50% each level
@@ -80,7 +82,15 @@ class Player(Character):
             # Calculate direction based on angle
             direction_x = math.cos(angle)
             direction_y = math.sin(angle)
-            return Projectile(self.x + self.size // 2, self.y + self.size // 2, direction_x * 10, direction_y * 10)
+            projectile1 = Projectile(self.x + self.size // 2, self.y + self.size // 2, direction_x * 10, direction_y * 10)
+            if self.double_shoot_enabled:
+                # Adjust angle for the second projectile
+                angle_offset = 0.2  # Adjust this value for desired spread
+                direction_x2 = math.cos(angle + angle_offset)
+                direction_y2 = math.sin(angle + angle_offset)
+                projectile2 = Projectile(self.x + self.size // 2, self.y + self.size // 2, direction_x2 * 10, direction_y2 * 10)
+                return (projectile1, projectile2)
+            return projectile1
         return None
 
     def draw_experience_bar(self, screen):

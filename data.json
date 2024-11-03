@@ -1,19 +1,19 @@
 {
     "scoreboard": [
         {
-            "initials": "CSD",
-            "score": 21
+            "initials": "JPG",
+            "score": 37
         },
         {
-            "initials": "CSD",
-            "score": 14
+            "initials": "JPG",
+            "score": 33
         },
         {
-            "initials": "CSD",
-            "score": 13
+            "initials": "JPG",
+            "score": 27
         }
     ],
-    "coins": 41,
+    "coins": 310,
     "unlocked_characters": [
         "DefaultPlayer",
         "Mario"

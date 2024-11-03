@@ -232,10 +232,13 @@ class GameController:
         self.player.update()
         
         mouse_pos = pygame.mouse.get_pos()
-        projectile = self.player.shoot(mouse_pos)
+        projectiles = self.player.shoot(mouse_pos)
         
-        if projectile:
-            self.projectiles.append(projectile)
+        if projectiles:
+            if isinstance(projectiles, tuple):
+                self.projectiles.extend(projectiles)
+            else:
+                self.projectiles.append(projectiles)
 
         for projectile in self.projectiles[:]:  # Usar una copia de la lista para evitar problemas al eliminar
             projectile.move()

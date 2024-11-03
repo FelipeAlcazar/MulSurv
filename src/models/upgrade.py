@@ -26,6 +26,9 @@ def decrease_speed(player, enemies):
     for enemy in enemies:
         # Reduce la velocidad de cada enemigo
         enemy.speed = max(1, enemy.speed - 1)
+
+def double_shoot(player):
+    player.double_shoot_enabled = True
    
 
 # Define available upgrades
@@ -34,5 +37,6 @@ available_upgrades = [
     Upgrade("Change Weapon", "Changes the weapon to a gun.", change_weapon),
     Upgrade("Increase Speed", "Increases the player's speed.", increase_speed),
     Upgrade("Increase Health", "Increases the player's health.", increase_health),
-    Upgrade("Enemies less aggressive", "Decreases the speed of the enemies.", decrease_speed)
+    Upgrade("Enemies less aggressive", "Decreases the speed of the enemies.", decrease_speed),
+    Upgrade("Double Shoot", "Allows the player to shoot two bullets at once.", double_shoot)
 ]
