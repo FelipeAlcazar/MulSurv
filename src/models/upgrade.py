@@ -12,10 +12,6 @@ class Upgrade:
 def increase_fire_rate(player):
     player.weapon.shoot_delay = max(100, player.weapon.shoot_delay - 100)
 
-def change_weapon(player):
-    new_weapon = Weapon("Gun")
-    player.change_weapon(new_weapon)
-
 def increase_speed(player):
     player.speed += 1
     
@@ -37,7 +33,6 @@ def triple_shoot(player):
 # Define available upgrades
 available_upgrades = [
     Upgrade("Increase Fire Rate", "Decreases the time between shots.", increase_fire_rate),
-    Upgrade("Change Weapon", "Changes the weapon to a gun.", change_weapon),
     Upgrade("Increase Speed", "Increases the player's speed.", increase_speed),
     Upgrade("Increase Health", "Increases the player's health.", increase_health),
     Upgrade("Enemies less aggressive", "Decreases the speed of the enemies.", decrease_speed),
