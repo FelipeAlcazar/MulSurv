@@ -19,6 +19,7 @@ class GameController:
         self.clock = pygame.time.Clock()
         self.menu_view = MenuView(self.screen)
         self.game_view = GameView(self.screen)
+        self.arrow_image = pygame.image.load('assets/images/arrow.png')  # Load arrow image once
         self.player = None
         self.enemies = []
         self.projectiles = []
@@ -290,6 +291,7 @@ class GameController:
 
         now = pygame.time.get_ticks()
         elapsed_time = now - self.start_time
+
         if now - self.last_spawn_time > self.spawn_delay:
             self.last_spawn_time = now
             side = random.choice(['top', 'bottom', 'left', 'right'])
@@ -305,29 +307,17 @@ class GameController:
             elif side == 'right':
                 spawn_x = self.screen.get_width() - 40
                 spawn_y = random.randint(0, self.screen.get_height() - 40)
-            self.spawn_indicators.append((spawn_x, spawn_y, now, side))
 
-        for indicator in self.spawn_indicators:
-            spawn_x, spawn_y, spawn_time, side = indicator
-            direction_x = self.player.x - spawn_x
-            direction_y = self.player.y - spawn_y
-            angle = math.degrees(math.atan2(direction_y, direction_x))
-            arrow = pygame.image.load('assets/images/arrow.png')
-            arrow = pygame.transform.rotate(arrow, -angle)
-            arrow_rect = arrow.get_rect(center=(spawn_x + 20, spawn_y + 20))
-            if (now // self.blink_interval) % 2 == 0:
-                self.screen.blit(arrow, arrow_rect)
-            if now - spawn_time > self.spawn_delay:
-                if elapsed_time < self.enemy_switch_interval:
-                    enemy_type = SpecificEnemy
-                elif elapsed_time < self.controller_enemy_interval:
-                    enemy_type = CameraEnemy
-                else:
-                    enemy_type = ControllerEnemy
-                self.enemies.append(enemy_type(spawn_x, spawn_y))
-                self.spawn_indicators.remove(indicator)
+            if elapsed_time < self.enemy_switch_interval:
+                enemy_type = SpecificEnemy
+            elif elapsed_time < self.controller_enemy_interval:
+                enemy_type = CameraEnemy
+            else:
+                enemy_type = ControllerEnemy
+            self.enemies.append(enemy_type(spawn_x, spawn_y))
 
         # Calculate angle between player and mouse position
+        mouse_pos = pygame.mouse.get_pos()
         dx = mouse_pos[0] - (self.player.x + self.player.size // 2)
         dy = mouse_pos[1] - (self.player.y + self.player.size // 2)
         angle = math.degrees(math.atan2(dy, dx))
