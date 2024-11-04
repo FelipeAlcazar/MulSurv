@@ -6,7 +6,7 @@ class GameView:
         self.background_image = pygame.image.load('assets/images/background_game.png')
         self.background_image = pygame.transform.scale(self.background_image, (self.screen.get_width(), self.screen.get_height()))
         self.heart_image = pygame.image.load('assets/images/heart.png')
-        self.heart_image = pygame.transform.scale(self.heart_image, (90, 90))  # Ajusta el tamaño del corazón
+        self.heart_image = pygame.transform.scale(self.heart_image, (90, 90))  # Adjust the size of the heart
 
     def draw_background(self):
         self.screen.blit(self.background_image, (0, 0))
@@ -27,7 +27,9 @@ class GameView:
 
     def show_health(self, health):
         for i in range(health):
-            self.screen.blit(self.heart_image, (10 + i * 35, 50))  # Ajusta la posición de los corazones
+            if health == 1 and (pygame.time.get_ticks() // 500) % 2 == 0:  # Blink every 500 ms
+                continue  # Skip drawing the heart to create a blinking effect
+            self.screen.blit(self.heart_image, (10 + i * 35, 50))  # Adjust the position of the hearts
 
     def show_upgrade_options(self, options, selected_option):
         # Draw a semi-transparent overlay

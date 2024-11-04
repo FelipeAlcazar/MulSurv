@@ -223,10 +223,10 @@ class GameController:
         original_x, original_y = self.player.x, self.player.y    
         self.player.move(keys)
         
-        for rock in self.rocks:
+        for rock in self.rocks[:]:
             rock.draw(self.screen)
             if check_collision(self.player, rock):
-                self.player.x, self.player.y = original_x, original_y  # Revertir posición si hay colisión
+                self.player.x, self.player.y = original_x, original_y  # Revert position if collision occurs
 
         self.player.draw(self.screen)
         self.player.draw_experience_bar(self.screen)
@@ -241,15 +241,17 @@ class GameController:
             else:
                 self.projectiles.append(projectiles)
 
-        for projectile in self.projectiles[:]:  # Usar una copia de la lista para evitar problemas al eliminar
+        for projectile in self.projectiles[:]:  # Use a copy of the list to avoid issues when removing items
             projectile.move()
             projectile.draw(self.screen)
 
-            # Verificar colisiones entre proyectiles y rocas
-            for rock in self.rocks:
+            # Check collisions between projectiles and rocks
+            for rock in self.rocks[:]:
                 if check_collision(projectile, rock):
-                    self.projectiles.remove(projectile)  # Eliminar el disparo
-                    break  # Salir del bucle ya que el proyectil ha colisionado
+                    if rock.take_damage():
+                        self.rocks.remove(rock)  # Remove the rock if it is destroyed
+                    self.projectiles.remove(projectile)  # Remove the projectile
+                    break  # Exit the loop since the projectile has collided
 
         for enemy in self.enemies:
             enemy.move_towards_player(self.player)
@@ -263,7 +265,7 @@ class GameController:
                         self.player.take_damage()
                         self.enemies.remove(enemy)
 
-            for projectile in self.projectiles[:]:  # Usar una copia de la lista
+            for projectile in self.projectiles[:]:  # Use a copy of the list
                 if check_collision(projectile, enemy):
                     if enemy.take_damage():
                         self.enemies.remove(enemy)
@@ -337,7 +339,6 @@ class GameController:
         self.game_view.show_score(self.score)
         self.game_view.show_time(self.start_time)
         self.game_view.show_health(self.player.health)
-
 
     def get_upgrade_options(self):
         options = random.sample(available_upgrades, 3)

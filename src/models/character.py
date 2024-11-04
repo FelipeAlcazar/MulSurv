@@ -1,4 +1,5 @@
 import pygame
+import random
 
 class Character:
     def __init__(self, x, y, size, speed, image_path, weapon):
@@ -8,25 +9,31 @@ class Character:
         self.speed = speed
         self.image = pygame.image.load(image_path)
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
+        self.red_tinted_image = self.image.copy()
+        self.red_tinted_image.fill((255, 0, 0, 128), special_flags=pygame.BLEND_RGBA_MULT)
         self.weapon = weapon
         self.health = 2
         self.invincible = False
         self.invincible_start_time = 0
         self.invincible_duration = 3000  # 3 seconds of invincibility
-        
+        self.hit_sounds = [
+            pygame.mixer.Sound("assets/sounds/playerHit.wav"), 
+            pygame.mixer.Sound("assets/sounds/playerHit2.wav")
+        ]  # Load the hit sounds
 
     def draw(self, screen):
         if self.invincible:
             if (pygame.time.get_ticks() // 100) % 2 == 0:  # Blink every 100 ms
-                return  # Skip drawing to create a blinking effect
+                screen.blit(self.red_tinted_image, (self.x, self.y))
+                return  # Skip drawing the normal image to create a blinking effect
         screen.blit(self.image, (self.x, self.y))
-
 
     def take_damage(self):
         if not self.invincible:
             self.health -= 1
             self.invincible = True
             self.invincible_start_time = pygame.time.get_ticks()
+            random.choice(self.hit_sounds).play()  # Randomly play one of the hit sounds
 
     def move(self, keys):
         if keys[pygame.K_LEFT] and self.x > 0:
@@ -41,5 +48,3 @@ class Character:
     def update(self):
         if self.invincible and pygame.time.get_ticks() - self.invincible_start_time > self.invincible_duration:
             self.invincible = False
-    
-    
