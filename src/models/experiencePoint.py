@@ -1,13 +1,14 @@
 import pygame
 
 class ExperiencePoint:
+    # Class variable to hold the loaded and scaled image
+    image = pygame.transform.scale(pygame.image.load('assets/images/experience_point.png'), (30, 30))
+
     def __init__(self, x, y, value, spawn_time):
         self.x = x
         self.y = y
         self.value = value
         self.size = 10
-        self.image = pygame.image.load('assets/images/experience_point.png')
-        self.image = pygame.transform.scale(self.image, (self.size * 3, self.size * 3))
         self.spawn_time = spawn_time
 
     def draw(self, screen):
