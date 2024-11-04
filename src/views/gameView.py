@@ -37,16 +37,33 @@ class GameView:
         overlay.fill((0, 0, 0, 128))  # Set transparency level
         self.screen.blit(overlay, (0, 0))
 
-        upgrade_font = pygame.font.Font(None, 74)
+        upgrade_font = pygame.font.Font(None, 36)  # Reduced font size
         option_texts = [upgrade_font.render(option.name, True, (255, 255, 255)) for option in options]
 
-        # Calculate the starting y-coordinate to center the options
-        total_height = len(option_texts) * 100
-        start_y = (self.screen.get_height() - total_height) // 2
-        option_rects = [text.get_rect(center=(self.screen.get_width() // 2, start_y + i * 100)) for i, text in enumerate(option_texts)]
+        # Preload and scale the upgrade images
+        upgrade_images = []
+        for option in options:
+            upgrade_image = pygame.image.load(option.image_path)
+            image_rect = upgrade_image.get_rect()
+            scale_factor = min(self.screen.get_width() // 4 / image_rect.width, self.screen.get_height() // 4 / image_rect.height)
+            upgrade_image = pygame.transform.scale(upgrade_image, (int(image_rect.width * scale_factor), int(image_rect.height * scale_factor)))
+            upgrade_images.append(upgrade_image)
 
-        for i, (rect, text) in enumerate(zip(option_rects, option_texts)):
+        # Calculate the starting x and y coordinates to center the options
+        total_width = sum(image.get_width() for image in upgrade_images) + (len(upgrade_images) - 1) * 60  # Increased separation
+        start_x = (self.screen.get_width() - total_width) // 2
+        start_y = self.screen.get_height() // 2
+
+        for i, (text, upgrade_image) in enumerate(zip(option_texts, upgrade_images)):
+            image_rect = upgrade_image.get_rect(center=(start_x + upgrade_image.get_width() // 2, start_y))
+            self.screen.blit(upgrade_image, image_rect)
+
+            # Draw the upgrade text below the image
+            text_rect = text.get_rect(center=(image_rect.centerx, image_rect.bottom + 20))
+            self.screen.blit(text, text_rect)
+
             if i == selected_option:
                 # Highlight the selected option
-                pygame.draw.rect(self.screen, (255, 255, 0), rect.inflate(20, 20), 3)  # Draw a yellow rectangle around the selected option
-            self.screen.blit(text, rect)
+                pygame.draw.rect(self.screen, (255, 255, 0), image_rect.inflate(20, 20), 3)  # Draw a yellow rectangle around the selected option
+
+            start_x += upgrade_image.get_width() + 60  # Move to the next position with increased separation

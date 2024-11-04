@@ -1,10 +1,11 @@
 from src.models.weapon import Weapon
 
 class Upgrade:
-    def __init__(self, name, description, apply_upgrade):
+    def __init__(self, name, description, apply_upgrade, image_path):
         self.name = name
         self.description = description
         self.apply_upgrade = apply_upgrade
+        self.image_path = image_path
 
     def apply(self, player):
         self.apply_upgrade(player)
@@ -20,7 +21,6 @@ def increase_health(player):
 
 def decrease_speed(player, enemies):
     for enemy in enemies:
-        # Reduce la velocidad de cada enemigo
         enemy.speed = max(1, enemy.speed - 1)
 
 def double_shoot(player):
@@ -28,14 +28,14 @@ def double_shoot(player):
 
 def triple_shoot(player):
     player.triple_shoot_enabled = True
-   
 
 # Define available upgrades
+image_path = 'assets/images/heart_upgrade.png'
 available_upgrades = [
-    Upgrade("Increase Fire Rate", "Decreases the time between shots.", increase_fire_rate),
-    Upgrade("Increase Speed", "Increases the player's speed.", increase_speed),
-    Upgrade("Increase Health", "Increases the player's health.", increase_health),
-    Upgrade("Enemies less aggressive", "Decreases the speed of the enemies.", decrease_speed),
-    Upgrade("Double Shoot", "Allows the player to shoot two bullets at once.", double_shoot),
-    Upgrade("Triple Shoot", "Allows the player to shoot three bullets at once.", triple_shoot)
+    Upgrade("Increase Fire Rate", "Decreases the time between shots.", increase_fire_rate, image_path),
+    Upgrade("Increase Speed", "Increases the player's speed.", increase_speed, image_path),
+    Upgrade("Increase Health", "Increases the player's health.", increase_health, image_path),
+    Upgrade("Enemies less aggressive", "Decreases the speed of the enemies.", decrease_speed, image_path),
+    Upgrade("Double Shoot", "Allows the player to shoot two bullets at once.", double_shoot, image_path),
+    Upgrade("Triple Shoot", "Allows the player to shoot three bullets at once.", triple_shoot, image_path)
 ]
