@@ -11,6 +11,8 @@ from src.models.rock import Rock
 from src.utils.data_manager import load_data, save_data
 import random
 import math
+import time
+from PIL import Image
 
 class GameController:
     def __init__(self):
@@ -107,7 +109,63 @@ class GameController:
         pygame.quit()
 
     def end_game(self):
-        """Finaliza el juego, añade monedas ganadas y actualiza el scoreboard si es necesario."""
+        """Finaliza el juego, muestra pantalla de Game Over con animación y texto, añade monedas ganadas y actualiza el scoreboard si es necesario."""
+        
+        # Inicializar pygame y configurar pantalla
+        pygame.init() 
+        pygame.display.set_caption("Game Over")
+        
+        # Cargar el GIF con Pillow y extraer fotogramas
+        gif_path = "assets/images/perder.gif"
+        gif = Image.open(gif_path)
+        gif_frames = []
+        
+        try:
+            while True:
+                frame = gif.copy()
+                # Convertir cada fotograma a un formato compatible con pygame
+                frame = frame.convert("RGBA")
+                pygame_image = pygame.image.fromstring(frame.tobytes(), frame.size, frame.mode)
+                gif_frames.append(pygame_image)
+                gif.seek(len(gif_frames))  # Ir al siguiente fotograma
+        except EOFError:
+            pass  # Termina cuando no hay más fotogramas
+
+        # Cargar imagen de fondo
+        background_path = "assets/images/background.png"  # Cambia la ruta de la imagen según sea necesario
+        background = pygame.image.load(background_path)
+        background = pygame.transform.scale(background, (self.screen.get_width(), self.screen.get_height()))  # Redimensionar al tamaño de la pantalla
+        background.set_alpha(80)  # Establecer opacidad (0 es completamente transparente, 255 es opaco)
+
+        # Cargar la imagen de "Game Over"
+        game_over_image_path = "assets/images/gameover.png"  # Ruta de la imagen de Game Over
+        game_over_image = pygame.image.load(game_over_image_path)
+        game_over_image = pygame.transform.scale(game_over_image, (500, 400))  # Redimensionar la imagen si es necesario
+        game_over_rect = game_over_image.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 4))  # Posición centrada en la parte superior
+
+        # Loop para mostrar la animación de "Game Over" durante unos segundos
+        start_time = time.time()
+        frame_index = 0
+        while time.time() - start_time < 4:  # Mostrar durante 4 segundos
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+
+            # Dibujar el fondo, el GIF y la imagen de "Game Over"
+            self.screen.fill((0, 0, 0))  # Llenar con negro para asegurar que no haya artefactos
+            self.screen.blit(background, (0, 0))  # Colocar la imagen de fondo
+            gif_rect = gif_frames[frame_index].get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 1.5))  # Centrar el GIF
+            self.screen.blit(gif_frames[frame_index], gif_rect)  # Coloca el GIF en el centro de la pantalla
+            self.screen.blit(game_over_image, game_over_rect)  # Colocar la imagen de Game Over sobre el GIF
+
+            pygame.display.flip()  # Actualizar pantalla
+
+            # Avanzar al siguiente fotograma
+            frame_index = (frame_index + 1) % len(gif_frames)
+            time.sleep(0.1)  # Controlar la velocidad de reproducción
+
+        # Finalizar el juego y limpiar recursos
         self.coins += self.score
         print(f"Partida finalizada. Has ganado {self.score} monedas.")
 
@@ -125,6 +183,9 @@ class GameController:
         self.game_data["coins"] = self.coins
         save_data(self.game_data)
 
+        # Cerrar ventana de pygame
+        pygame.quit()
+    
     def update_scoreboard(self, score):
         """Verifica si el score entra en el top 3 y prepara la entrada para iniciales si lo hace."""
         # Añadir una entrada temporal con iniciales vacías si el score califica para el top 3

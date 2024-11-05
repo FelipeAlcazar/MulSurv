@@ -93,10 +93,18 @@ class CharacterSelectionView:
             name_text = pygame.font.Font(None, 24).render(character_name, True, self.text_color)
             name_x = box_x + (box_width - name_text.get_width()) // 2
             self.screen.blit(name_text, (name_x, box_y + box_height // 2 + 20))
+            
+            character_costs = {
+                "DefaultPlayer": 0,    # Por ejemplo, el personaje predeterminado es gratuito
+                "Brillo": 500,
+                "Mario": 50,
+                "Miau Miau": 10000,
+                # Agrega más personajes y sus costos aquí
+            }
 
             # Mostrar estadísticas o costo si está bloqueado
             if character_name != "DefaultPlayer":
-                cost = 50  # Ejemplo de costo para desbloquear
+                cost = character_costs.get(character_name, 50)  # Obtener el costo del personaje, por defecto 50 si no está en el diccionario
                 unlock_text = ""
                 unlock_color = (255, 0, 0)  # Rojo si no se puede desbloquear
                 if character_name in self.unlocked_characters:
@@ -107,7 +115,7 @@ class CharacterSelectionView:
                         unlock_text = f"Unlock for {cost} Coins"
                         unlock_color = (0, 255, 0)  # Verde si se puede desbloquear
                     else:
-                        unlock_text = f"Locked (Cost: {cost})"
+                        unlock_text = f"Locked (Cost: {cost} Coins)"
 
                 unlock_text_render = pygame.font.Font(None, 20).render(unlock_text, True, unlock_color)
                 self.screen.blit(unlock_text_render, (box_x + (box_width - unlock_text_render.get_width()) // 2, box_y + box_height // 2 + 40))

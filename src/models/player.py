@@ -18,6 +18,18 @@ class Player(Character):
             "size": 50,
             "speed": 7
         },
+        "Miau Miau": {
+            "image_path": 'assets/images/personaje.png',
+            "weapon_name": "Gun",
+            "size": 50,
+            "speed": 9
+        },
+        "Brillo": {
+            "image_path": 'assets/images/Javi.png',
+            "weapon_name": "Gun",
+            "size": 50,
+            "speed": 6
+        },
         
     }
 
