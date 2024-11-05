@@ -24,10 +24,10 @@ def decrease_speed(player, enemies):
         enemy.speed = max(1, enemy.speed - 1)
 
 def double_shoot(player):
-    player.double_shoot_enabled = True
+    player.double_shoot = True
 
 def triple_shoot(player):
-    player.triple_shoot_enabled = True
+    player.triple_shoot = True
 
 # Define available upgrades
 image_path = 'assets/images/heart_upgrade.png'

@@ -37,8 +37,8 @@ class Player(Character):
         self.experience = 0
         self.level = 1
         self.experience_to_next_level = self.calculate_experience_to_next_level()
-        self.double_shoot_enabled = False
-        self.triple_shoot_enabled = False
+        self.double_shoot = False
+        self.triple_shoot = False
 
 
     def calculate_experience_to_next_level(self):
@@ -76,27 +76,35 @@ class Player(Character):
         if now - self.last_shot > self.weapon.shoot_delay:
             self.last_shot = now
             self.weapon.play_sound()
-            # Calculate angle between player and mouse position
+            # Calcular el ángulo entre el jugador y la posición del ratón
             dx = mouse_pos[0] - (self.x + self.size // 2)
             dy = mouse_pos[1] - (self.y + self.size // 2)
             angle = math.atan2(dy, dx)
-            # Calculate direction based on angle
+            # Calcular la dirección basada en el ángulo
             direction_x = math.cos(angle)
             direction_y = math.sin(angle)
             projectile1 = Projectile(self.x + self.size // 2, self.y + self.size // 2, direction_x * 10, direction_y * 10)
-            if self.double_shoot_enabled:
-                # Adjust angle for the second projectile
-                angle_offset = 0.2  # Adjust this value for desired spread
+            
+            if self.triple_shoot:
+                self.double_shoot = False  # Desactivar doble disparo si triple disparo está activo
+                angle_offset1 = 0.2  # Ajustar este valor para el spread deseado
+                angle_offset2 = -0.2
+                direction_x2 = math.cos(angle + angle_offset1)
+                direction_y2 = math.sin(angle + angle_offset1)
+                direction_x3 = math.cos(angle + angle_offset2)
+                direction_y3 = math.sin(angle + angle_offset2)
+                projectile2 = Projectile(self.x + self.size // 2, self.y + self.size // 2, direction_x2 * 10, direction_y2 * 10)
+                projectile3 = Projectile(self.x + self.size // 2, self.y + self.size // 2, direction_x3 * 10, direction_y3 * 10)
+                return (projectile1, projectile2, projectile3)
+            
+            if self.double_shoot:
+                self.triple_shoot = False  # Desactivar triple disparo si doble disparo está activo
+                angle_offset = 0.2  # Ajustar este valor para el spread deseado
                 direction_x2 = math.cos(angle + angle_offset)
                 direction_y2 = math.sin(angle + angle_offset)
                 projectile2 = Projectile(self.x + self.size // 2, self.y + self.size // 2, direction_x2 * 10, direction_y2 * 10)
-                if self.triple_shoot_enabled:
-                    angle_offset = -0.2
-                    direction_x2 = math.cos(angle + angle_offset)
-                    direction_y2 = math.sin(angle + angle_offset)
-                    projectile3 = Projectile(self.x + self.size // 2, self.y + self.size // 2, direction_x2 * 10, direction_y2 * 10)
-                    return (projectile1, projectile2, projectile3)        
                 return (projectile1, projectile2)
+            
             return projectile1
         return None
 
