@@ -31,11 +31,15 @@ def triple_shoot(player):
 
 # Define available upgrades
 image_path = 'assets/images/heart_upgrade.png'
+speed_image_path = 'assets/images/speed_upgrade.png'
+firerate_image_path = 'assets/images/firerate_upgrade.png'
+doubleShoot_image_path = 'assets/images/doubleShoot_upgrade.png'
+tripleShoot_image_path = 'assets/images/tripleShoot_upgrade.png'
 available_upgrades = [
-    Upgrade("Increase Fire Rate", "Decreases the time between shots.", increase_fire_rate, image_path),
-    Upgrade("Increase Speed", "Increases the player's speed.", increase_speed, image_path),
+    Upgrade("Increase Fire Rate", "Decreases the time between shots.", increase_fire_rate, firerate_image_path),
+    Upgrade("Increase Speed", "Increases the player's speed.", increase_speed, speed_image_path),
     Upgrade("Increase Health", "Increases the player's health.", increase_health, image_path),
     Upgrade("Enemies less aggressive", "Decreases the speed of the enemies.", decrease_speed, image_path),
-    Upgrade("Double Shoot", "Allows the player to shoot two bullets at once.", double_shoot, image_path),
-    Upgrade("Triple Shoot", "Allows the player to shoot three bullets at once.", triple_shoot, image_path)
+    Upgrade("Double Shoot", "Allows the player to shoot two bullets at once.", double_shoot, doubleShoot_image_path),
+    Upgrade("Triple Shoot", "Allows the player to shoot three bullets at once.", triple_shoot, tripleShoot_image_path)
 ]
