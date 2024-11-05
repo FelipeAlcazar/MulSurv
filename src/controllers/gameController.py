@@ -3,7 +3,7 @@ from src.models.player import Player
 from src.models.enemy import SpecificEnemy, CameraEnemy, ControllerEnemy
 from src.models.experiencePoint import ExperiencePoint
 from src.models.upgrade import available_upgrades, decrease_speed
-from src.views.characterSelectionView import CharacterSelectionView 
+from src.views.characterSelectionView import CharacterSelectionView
 from src.utils.collision import check_collision
 from src.views.gameView import GameView
 from src.views.menuView import MenuView
@@ -42,16 +42,19 @@ class GameController:
         self.enemy_switch_interval = 30000  # 30 seconds in milliseconds
         self.controller_enemy_interval = 60000  # 60 seconds in milliseconds
         self.paused = False
+        self.chosen_upgrades = {}
 
         # Cargar imagen de fondo
         self.background_image = pygame.image.load('assets/images/background_game.png').convert()
         self.background_image = pygame.transform.scale(self.background_image, (self.screen.get_width(), self.screen.get_height()))
 
+        # Preload upgrade images
+        self.game_view.preload_upgrade_images(available_upgrades)
+
     def init_display(self):
         info = pygame.display.Info()
         self.screen = pygame.display.set_mode((info.current_w, info.current_h), pygame.RESIZABLE)
         pygame.display.set_caption("Multimedia Game")
-
 
     def select_character(self):
         """Muestra la pantalla de selección de personaje y asigna el personaje seleccionado."""
@@ -76,7 +79,7 @@ class GameController:
                 if not check_collision(self.player, rock):  # Implementar la función check_collision para verificar
                     self.rocks.append(rock)
                     break  # Salir del ciclo si la roca se genera en una posición válida
-        
+
         if not self.player:
             print("No character selected, exiting the game.")
             self.running = False
@@ -85,7 +88,7 @@ class GameController:
 
         while self.running:
             self.screen.fill((0, 0, 0))
-            
+
             self.screen.blit(self.background_image, (0, 0))
 
             # Lógica del juego y actualización de pantalla
@@ -103,7 +106,6 @@ class GameController:
         self.end_game()
         pygame.quit()
 
-    
     def end_game(self):
         """Finaliza el juego, añade monedas ganadas y actualiza el scoreboard si es necesario."""
         self.coins += self.score
@@ -123,7 +125,6 @@ class GameController:
         self.game_data["coins"] = self.coins
         save_data(self.game_data)
 
-    
     def update_scoreboard(self, score):
         """Verifica si el score entra en el top 3 y prepara la entrada para iniciales si lo hace."""
         # Añadir una entrada temporal con iniciales vacías si el score califica para el top 3
@@ -132,7 +133,7 @@ class GameController:
             self.top_scores = sorted(self.top_scores, key=lambda x: x["score"], reverse=True)[:3]
             return True
         return False
-    
+
     def enter_initials(self):
         """Pantalla para que el jugador ingrese sus iniciales y mostrar el top 3 actual."""
         font_large = pygame.font.Font(None, 64)
@@ -176,7 +177,6 @@ class GameController:
 
         return initials if len(initials) == 3 else "AAA"
 
-
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -202,7 +202,7 @@ class GameController:
                     elif event.key == pygame.K_RETURN:
                         self.apply_upgrade(self.options[self.selected_option])
                         self.upgrade_menu_active = False
-    
+
     def show_pause_menu(self):
         # Dibujar el fondo del menú de pausa
         pause_font = pygame.font.Font(None, 74)
@@ -217,12 +217,11 @@ class GameController:
             option_text = options_font.render(option, True, color)
             self.screen.blit(option_text, (self.screen.get_width() // 2 - option_text.get_width() // 2, 300 + i * 60))
 
-
     def update_game(self):
         keys = pygame.key.get_pressed()
-        original_x, original_y = self.player.x, self.player.y    
+        original_x, original_y = self.player.x, self.player.y
         self.player.move(keys)
-        
+
         for rock in self.rocks[:]:
             rock.draw(self.screen)
             if check_collision(self.player, rock):
@@ -231,10 +230,10 @@ class GameController:
         self.player.draw(self.screen)
         self.player.draw_experience_bar(self.screen)
         self.player.update()
-        
+
         mouse_pos = pygame.mouse.get_pos()
         projectiles = self.player.shoot(mouse_pos)
-        
+
         if projectiles:
             if isinstance(projectiles, tuple):
                 self.projectiles.extend(projectiles)
@@ -339,14 +338,19 @@ class GameController:
         self.game_view.show_score(self.score)
         self.game_view.show_time(self.start_time)
         self.game_view.show_health(self.player.health)
+        self.game_view.show_chosen_upgrades(self.chosen_upgrades)
 
     def get_upgrade_options(self):
         options = random.sample(available_upgrades, 3)
         for option in options:
             if option.name == "Enemies less aggressive":
-                option.apply_upgrade = lambda player: decrease_speed(player,self.enemies)
+                option.apply_upgrade = lambda player: decrease_speed(player, self.enemies)
         selected_option = 0
         return options, selected_option
 
     def apply_upgrade(self, upgrade):
         upgrade.apply(self.player)
+        if upgrade.name in self.chosen_upgrades:
+            self.chosen_upgrades[upgrade.name] += 1
+        else:
+            self.chosen_upgrades[upgrade.name] = 1

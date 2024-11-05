@@ -7,6 +7,7 @@ class GameView:
         self.background_image = pygame.transform.scale(self.background_image, (self.screen.get_width(), self.screen.get_height()))
         self.heart_image = pygame.image.load('assets/images/heart.png')
         self.heart_image = pygame.transform.scale(self.heart_image, (90, 90))  # Adjust the size of the heart
+        self.upgrade_images = {}
 
     def draw_background(self):
         self.screen.blit(self.background_image, (0, 0))
@@ -79,3 +80,21 @@ class GameView:
                 pygame.draw.rect(self.screen, (255, 255, 0), image_rect.inflate(20, 20), 3)  # Draw a yellow rectangle around the selected option
 
             start_x += upgrade_image.get_width() + 100  # Move to the next position with increased separation
+
+    def show_chosen_upgrades(self, chosen_upgrades):
+        start_y = 150  # Lower the starting y position
+        for upgrade, count in chosen_upgrades.items():
+            upgrade_image = self.upgrade_images[upgrade]
+            upgrade_image.set_alpha(255)  # Set alpha to 100%
+            self.screen.blit(upgrade_image, (10, start_y))
+            if count > 1:
+                font = pygame.font.Font(None, 24)
+                count_text = font.render(f'x{count}', True, (255, 255, 255))
+                self.screen.blit(count_text, (10 + upgrade_image.get_width() + 5, start_y + upgrade_image.get_height() // 2))
+            start_y += upgrade_image.get_height() + 10
+
+    def preload_upgrade_images(self, upgrades):
+        for upgrade in upgrades:
+            image = pygame.image.load(upgrade.image_path)
+            image = pygame.transform.scale(image, (50, 50))  # Small size
+            self.upgrade_images[upgrade.name] = image
