@@ -1,19 +1,19 @@
 {
     "scoreboard": [
         {
+            "initials": "PIT",
+            "score": 134
+        },
+        {
             "initials": "JPG",
             "score": 94
         },
         {
-            "initials": "FEL",
-            "score": 61
-        },
-        {
-            "initials": "GOO",
-            "score": 43
+            "initials": "GOD",
+            "score": 90
         }
     ],
-    "coins": 1102,
+    "coins": 1592,
     "unlocked_characters": [
         "DefaultPlayer",
         "Mario"

@@ -86,15 +86,34 @@ class GameView:
         for upgrade, count in chosen_upgrades.items():
             upgrade_image = self.upgrade_images[upgrade]
             upgrade_image.set_alpha(255)  # Set alpha to 100%
-            self.screen.blit(upgrade_image, (10, start_y))
-            if count > 1:
-                font = pygame.font.Font(None, 24)
-                count_text = font.render(f'x{count}', True, (255, 255, 255))
-                self.screen.blit(count_text, (10 + upgrade_image.get_width() + 5, start_y + upgrade_image.get_height() // 2))
+            for i in range(count):
+                self.screen.blit(upgrade_image, (10 + i * 10, start_y))  # Shift each image slightly to the right
             start_y += upgrade_image.get_height() + 10
 
     def preload_upgrade_images(self, upgrades):
         for upgrade in upgrades:
             image = pygame.image.load(upgrade.image_path)
-            image = pygame.transform.scale(image, (50, 50))  # Small size
+            image = self.scale_image(image, (50, 50))
             self.upgrade_images[upgrade.name] = image
+
+    def scale_image(self, image, target_size):
+        original_width, original_height = image.get_size()
+        target_width, target_height = target_size
+
+        aspect_ratio = original_width / original_height
+
+        if original_width > original_height:
+            new_width = target_width
+            new_height = int(target_width / aspect_ratio)
+        else:
+            new_height = target_height
+            new_width = int(target_height * aspect_ratio)
+
+        scaled_image = pygame.transform.smoothscale(image, (new_width, new_height))
+
+        # Create a new surface with the target size and center the scaled image on it
+        final_image = pygame.Surface(target_size, pygame.SRCALPHA)
+        final_image.fill((0, 0, 0, 0))  # Fill with transparent color
+        final_image.blit(scaled_image, ((target_width - new_width) // 2, (target_height - new_height) // 2))
+
+        return final_image
