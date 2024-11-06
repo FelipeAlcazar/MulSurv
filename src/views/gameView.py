@@ -56,7 +56,7 @@ class GameView:
             upgrade_images.append(upgrade_image)
 
         # Calculate the starting x and y coordinates to center the options
-        total_width = sum(image.get_width() for image in upgrade_images) + (len(upgrade_images) - 1) * 100  # Increased separation
+        total_width = sum(image.get_width() for image in upgrade_images) + (len(upgrade_images) - 1) * 150  # Increased separation
         start_x = (self.screen.get_width() - total_width) // 2
         start_y = self.screen.get_height() // 2
 
@@ -78,7 +78,7 @@ class GameView:
                 # Highlight the selected option
                 pygame.draw.rect(self.screen, (255, 255, 0), image_rect.inflate(20, 20), 3)  # Draw a yellow rectangle around the selected option
 
-            start_x += upgrade_image.get_width() + 100  # Move to the next position with increased separation
+            start_x += upgrade_image.get_width() + 150  # Move to the next position with increased separation
 
     def show_chosen_upgrades(self, chosen_upgrades):
         start_y = 150  # Lower the starting y position
