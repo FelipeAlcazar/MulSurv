@@ -21,6 +21,18 @@ class Enemy:
             "size": 70,
             "image_size": 70,
             "speed": 3
+        },
+        "HeadphoneEnemy": {
+            "image_path": 'assets/images/headphones.png',
+            "size": 50,
+            "image_size": 50,
+            "speed": 4
+        },
+        "MouseEnemy": {
+            "image_path": 'assets/images/mouse.png',
+            "size": 80,
+            "image_size": 80,
+            "speed": 3
         }
     }
 
@@ -70,6 +82,14 @@ class SpecificEnemy(Enemy):
 class CameraEnemy(Enemy):
     def __init__(self, x, y):
         super().__init__(x, y, "CameraEnemy")
+
+class HeadphoneEnemy(Enemy):
+    def __init__(self, x, y):
+        super().__init__(x, y, "HeadphoneEnemy")
+
+class MouseEnemy(Enemy):
+    def __init__(self, x, y):
+        super().__init__(x, y, "MouseEnemy")
 
 class ControllerEnemy(Enemy):
     def __init__(self, x, y):
