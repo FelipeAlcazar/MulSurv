@@ -40,12 +40,20 @@ class CharacterSelectionView:
         self.unlocking = False  # Nueva variable para gestionar el estado de desbloqueo
         self.selected_character = None  # Almacena el personaje seleccionado
 
+        # Load the pixel font
+        self.font = pygame.font.Font('assets/fonts/pixel.ttf', 36)
+        self.title_font = pygame.font.Font('assets/fonts/pixel.ttf', 48)
+        self.name_font = pygame.font.Font('assets/fonts/pixel.ttf', 24)
+        self.unlock_font = pygame.font.Font('assets/fonts/pixel.ttf', 20)
+        self.weapon_font = pygame.font.Font('assets/fonts/pixel.ttf', 20)
+        self.stats_font = pygame.font.Font('assets/fonts/pixel.ttf', 24)
+
     def draw_coins(self):
         # Dibujar la imagen de la moneda
         self.screen.blit(self.coin_image, (10, 10))
         
         # Dibujar la cantidad de monedas y aumentar el tamaño del texto
-        coins_text = pygame.font.Font(None, 36).render(str(self.coins), True, self.text_color)
+        coins_text = self.font.render(str(self.coins), True, self.text_color)
         self.screen.blit(coins_text, (70, 24))
 
     def draw(self):
@@ -53,7 +61,7 @@ class CharacterSelectionView:
         self.screen.blit(self.background_image, (0, 0))
 
         # Título
-        title_text = pygame.font.Font(None, 48).render("Select Your Character", True, self.text_color)
+        title_text = self.title_font.render("Select Your Character", True, self.text_color)
         title_x = self.screen.get_width() // 2 - title_text.get_width() // 2
         self.screen.blit(title_text, (title_x, 50))
 
@@ -90,7 +98,7 @@ class CharacterSelectionView:
                 self.screen.blit(character_image, (image_x, box_y + 10))
 
             # Nombre del personaje
-            name_text = pygame.font.Font(None, 24).render(character_name, True, self.text_color)
+            name_text = self.name_font.render(character_name, True, self.text_color)
             name_x = box_x + (box_width - name_text.get_width()) // 2
             self.screen.blit(name_text, (name_x, box_y + box_height // 2 + 20))
             
@@ -117,14 +125,14 @@ class CharacterSelectionView:
                     else:
                         unlock_text = f"Locked (Cost: {cost} Coins)"
 
-                unlock_text_render = pygame.font.Font(None, 20).render(unlock_text, True, unlock_color)
+                unlock_text_render = self.unlock_font.render(unlock_text, True, unlock_color)
                 self.screen.blit(unlock_text_render, (box_x + (box_width - unlock_text_render.get_width()) // 2, box_y + box_height // 2 + 40))
                 if unlock_text != "Unlocked":  # Solo dibujar el candado si no está desbloqueado
                     self.screen.blit(self.locked_image, (box_x + box_width - 40, box_y + 10))
 
             # Nombre del arma
             weapon_name = character_data["weapon_name"]
-            weapon_text = pygame.font.Font(None, 20).render(f"Weapon: {weapon_name}", True, self.text_color)
+            weapon_text = self.weapon_font.render(f"Weapon: {weapon_name}", True, self.text_color)
             weapon_x = box_x + (box_width - weapon_text.get_width()) // 2
             self.screen.blit(weapon_text, (weapon_x, box_y + box_height // 2 + 70))
 
@@ -132,7 +140,7 @@ class CharacterSelectionView:
             stats_y = box_y + box_height // 2 + 100
             for stat, value in character_data.items():
                 if stat not in ["image_path", "weapon_name"]:
-                    stat_text = pygame.font.Font(None, 24).render(f"{stat.capitalize()}: {value}", True, self.text_color)
+                    stat_text = self.stats_font.render(f"{stat.capitalize()}: {value}", True, self.text_color)
                     self.screen.blit(stat_text, (box_x + 10, stats_y))
                     stats_y += 30
 
@@ -180,15 +188,3 @@ class CharacterSelectionView:
 
             self.draw()
             self.clock.tick(30)
-
-
-
-
-
-
-
-
-
-
-
-

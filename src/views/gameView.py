@@ -8,21 +8,20 @@ class GameView:
         self.heart_image = pygame.image.load('assets/images/heart.png')
         self.heart_image = pygame.transform.scale(self.heart_image, (90, 90))  # Adjust the size of the heart
         self.upgrade_images = {}
+        self.font = pygame.font.Font('assets/fonts/pixel.ttf', 36)  # Load the pixel font
 
     def draw_background(self):
         self.screen.blit(self.background_image, (0, 0))
 
     def show_score(self, score):
-        font = pygame.font.Font(None, 36)
-        score_text = font.render(f'Score: {score}', True, (255, 255, 255))
+        score_text = self.font.render(f'Score: {score}', True, (255, 255, 255))
         self.screen.blit(score_text, (10, 10))
 
     def show_time(self, start_time):
         elapsed_time = (pygame.time.get_ticks() - start_time) // 1000
         minutes = elapsed_time // 60
         seconds = elapsed_time % 60
-        font = pygame.font.Font(None, 36)
-        time_text = font.render(f'{minutes:02}:{seconds:02}', True, (255, 255, 255))
+        time_text = self.font.render(f'{minutes:02}:{seconds:02}', True, (255, 255, 255))
         time_rect = time_text.get_rect(topright=(self.screen.get_width() - 10, 10))
         self.screen.blit(time_text, time_rect)
 
@@ -39,12 +38,12 @@ class GameView:
         self.screen.blit(overlay, (0, 0))
 
         # Draw the "LEVEL UP!" title
-        title_font = pygame.font.Font(None, 48)
+        title_font = pygame.font.Font('assets/fonts/pixel.ttf', 48)
         title_text = title_font.render("LEVEL UP!", True, (255, 255, 0))
         title_rect = title_text.get_rect(center=(self.screen.get_width() // 2, 100))  # Lowered position
         self.screen.blit(title_text, title_rect)
 
-        upgrade_font = pygame.font.Font(None, 36)  # Reduced font size
+        upgrade_font = pygame.font.Font('assets/fonts/pixel.ttf', 36)  # Reduced font size
         option_texts = [upgrade_font.render(option.name, True, (255, 255, 255)) for option in options]
 
         # Preload and scale the upgrade images

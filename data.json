@@ -13,11 +13,10 @@
             "score": 90
         }
     ],
-    "coins": 1585,
+    "coins": 1555,
     "unlocked_characters": [
         "DefaultPlayer",
-        "Mario",
-        "Brillo",
-        "Miau Miau"
+        "Miau Miau",
+        "Mario"
     ]
 }

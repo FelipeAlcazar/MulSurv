@@ -52,6 +52,8 @@ class Player(Character):
         self.double_shoot = False
         self.triple_shoot = False
 
+        # Load the pixel font
+        self.font = pygame.font.Font('assets/fonts/pixel.ttf', 36)
 
     def calculate_experience_to_next_level(self):
         # Experience required increases by 50% each level
@@ -126,8 +128,7 @@ class Player(Character):
         screen_height = screen.get_height()
 
         # Draw player level
-        font = pygame.font.Font(None, 36)
-        level_text = font.render(f'Lvl. {self.level}', True, (255, 255, 255))
+        level_text = self.font.render(f'Lvl. {self.level}', True, (255, 255, 255))
         level_text_rect = level_text.get_rect()
         bar_width = 200
         bar_height = 20
