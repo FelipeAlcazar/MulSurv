@@ -8,6 +8,7 @@ from src.utils.collision import check_collision
 from src.views.gameView import GameView
 from src.views.menuView import MenuView
 from src.models.rock import Rock
+from src.models.tree import Tree
 from src.utils.data_manager import load_data, save_data
 import random
 import math
@@ -74,6 +75,8 @@ class GameController:
         self.top_scores = self.game_data.get("scoreboard", [])
         self.unlocked_characters = self.game_data.get("unlocked_characters", [])
         self.rocks = []
+        self.trees = []
+        num_trees = random.randint(5, 10)
         num_rocks = random.randint(8, 20)
         for _ in range(num_rocks):
             while True:
@@ -82,6 +85,13 @@ class GameController:
                 if not check_collision(self.player, rock):  # Implementar la función check_collision para verificar
                     self.rocks.append(rock)
                     break  # Salir del ciclo si la roca se genera en una posición válida
+        for _ in range(num_trees):
+            while True:
+                tree = Tree(self.screen.get_width(), self.screen.get_height())
+                # Verificar que el árbol no esté en la misma posición que el jugador
+                if not check_collision(self.player, tree):
+                    self.trees.append(tree)
+                    break
 
         if not self.player:
             print("No character selected, exiting the game.")
@@ -165,6 +175,7 @@ class GameController:
             # Avanzar al siguiente fotograma
             frame_index = (frame_index + 1) % len(gif_frames)
             time.sleep(0.1)  # Controlar la velocidad de reproducción
+
 
         # Finalizar el juego y limpiar recursos
         self.coins += self.score
@@ -288,6 +299,12 @@ class GameController:
             rock.draw(self.screen)
             if check_collision(self.player, rock):
                 self.player.x, self.player.y = original_x, original_y  # Revert position if collision occurs
+        
+        for tree in self.trees[:]:
+            tree.draw(self.screen)
+            if check_collision(self.player, tree):
+                self.player.x, self.player.y = original_x, original_y  # Revert position if collision occurs
+            
 
         self.player.draw(self.screen)
         self.player.draw_experience_bar(self.screen)
