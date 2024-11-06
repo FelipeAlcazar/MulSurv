@@ -1,6 +1,6 @@
 import pygame
 from src.models.player import Player
-from src.models.enemy import SpecificEnemy, CameraEnemy, ControllerEnemy
+from src.models.enemy import HeadphoneEnemy, MouseEnemy, SpecificEnemy, CameraEnemy, ControllerEnemy
 from src.models.experiencePoint import ExperiencePoint
 from src.models.upgrade import available_upgrades, decrease_speed
 from src.views.characterSelectionView import CharacterSelectionView
@@ -392,8 +392,12 @@ class GameController:
                 enemy_type = SpecificEnemy
             elif elapsed_time < self.controller_enemy_interval:
                 enemy_type = CameraEnemy
-            else:
+            elif elapsed_time < 2 * self.controller_enemy_interval:
                 enemy_type = ControllerEnemy
+            elif elapsed_time < 3 * self.controller_enemy_interval:
+                enemy_type = HeadphoneEnemy
+            else:
+                enemy_type = MouseEnemy
             self.enemies.append(enemy_type(spawn_x, spawn_y))
 
         # Calculate angle between player and mouse position

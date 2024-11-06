@@ -8,31 +8,36 @@ class Enemy:
             "image_path": 'assets/images/floppy_disk_enemy.png',
             "size": 50,
             "image_size": 50,
-            "speed": 2
+            "speed": 2,
+            "health": 1
         },
         "CameraEnemy": {
             "image_path": 'assets/images/camera_enemy.png',
             "size": 30,
             "image_size": 30,
-            "speed": 4
+            "speed": 3,
+            "health": 2
         },
         "ControllerEnemy": {
             "image_path": 'assets/images/controller_enemy.png',
             "size": 70,
             "image_size": 70,
-            "speed": 3
+            "speed": 4,
+            "health": 3
         },
         "HeadphoneEnemy": {
             "image_path": 'assets/images/headphones.png',
             "size": 50,
             "image_size": 50,
-            "speed": 4
+            "speed": 5,
+            "health": 4
         },
         "MouseEnemy": {
             "image_path": 'assets/images/mouse.png',
             "size": 80,
             "image_size": 80,
-            "speed": 3
+            "speed": 6,
+            "health": 5
         }
     }
 
@@ -42,12 +47,16 @@ class Enemy:
             self.size = enemy_info["size"]
             self.image_size = enemy_info["image_size"]
             self.speed = enemy_info["speed"]
+            self.original_speed = self.speed
+            self.health = enemy_info["health"]
             self.image = pygame.image.load(enemy_info["image_path"])
             self.image = pygame.transform.scale(self.image, (self.image_size, self.image_size))
         else:
             self.size = 40
             self.image_size = 60
             self.speed = 2
+            self.original_speed = self.speed
+            self.health = 1
             self.image = pygame.image.load('assets/images/enemy_image.png')
             self.image = pygame.transform.scale(self.image, (self.image_size, self.image_size))
         
@@ -72,8 +81,11 @@ class Enemy:
         return pygame.Rect(self.x, self.y, self.size, self.size)
 
     def take_damage(self):
-        # Default behavior: remove enemy immediately
-        return True
+        self.health -= 1
+        self.speed = max(1, self.speed - 1)  # Reduce speed but not below 1
+        if self.health <= 0:
+            return True  # Enemy should be removed
+        return False  # Enemy is still alive
 
 class SpecificEnemy(Enemy):
     def __init__(self, x, y):
@@ -94,10 +106,3 @@ class MouseEnemy(Enemy):
 class ControllerEnemy(Enemy):
     def __init__(self, x, y):
         super().__init__(x, y, "ControllerEnemy")
-        self.health = 2  # Requires two shots to be killed
-
-    def take_damage(self):
-        self.health -= 1
-        if self.health <= 0:
-            return True  # Enemy should be removed
-        return False  # Enemy is still alive
