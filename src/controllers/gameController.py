@@ -33,7 +33,7 @@ class GameController:
         self.score = 0
         self.game_data = None
         self.coins = None
-        self.start_time = pygame.time.get_ticks()
+        self.start_time = None  # Initialize start_time as None
         self.running = True
         self.upgrade_menu_active = False
         self.options = []
@@ -68,6 +68,7 @@ class GameController:
     def run(self):
         self.menu_view.show_menu()
         self.select_character()  # Selección de personaje antes del juego
+        self.start_time = pygame.time.get_ticks()  # Set start_time after character selection
         self.game_data = load_data()
         self.coins = self.game_data.get("coins", 0)
         self.top_scores = self.game_data.get("scoreboard", [])
