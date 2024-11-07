@@ -7,18 +7,10 @@ class MenuView:
         pygame.init()
         info = pygame.display.Info()
         
-        # Load background and title images
+        # Load background image
         self.background_image = pygame.image.load('assets/images/background.png')
         self.background_image = pygame.transform.scale(self.background_image, (self.screen.get_width(), self.screen.get_height()))
-        self.title_image = pygame.image.load('assets/images/logo.png')
         
-        # Scale the logo image
-        logo_width, logo_height = self.title_image.get_size()
-        scale_factor = min(self.screen.get_width() // 1.1 / logo_width, self.screen.get_height() // 2 / logo_height)
-        new_logo_width = int(logo_width * scale_factor)
-        new_logo_height = int(logo_height * scale_factor)
-        self.title_image = pygame.transform.scale(self.title_image, (new_logo_width, new_logo_height))
-
         # Load the shop button image and reduce its size while maintaining the aspect ratio
         self.shop_button_image = pygame.image.load('assets/images/shopSign.png')
         shop_button_width, shop_button_height = self.shop_button_image.get_size()
@@ -26,6 +18,14 @@ class MenuView:
         new_shop_button_width = int(shop_button_width * shop_scale_factor)
         new_shop_button_height = int(shop_button_height * shop_scale_factor)
         self.shop_button_image = pygame.transform.scale(self.shop_button_image, (new_shop_button_width, new_shop_button_height))
+
+        # Load the logo image
+        self.logo_image = pygame.image.load('assets/images/logo.png')
+        logo_width, logo_height = self.logo_image.get_size()
+        logo_scale_factor = 0.5  # Adjust the scale factor as needed
+        new_logo_width = int(logo_width * logo_scale_factor)
+        new_logo_height = int(logo_height * logo_scale_factor)
+        self.logo_image = pygame.transform.scale(self.logo_image, (new_logo_width, new_logo_height))
 
         # Define the help button
         self.help_button_rect = pygame.Rect(0, 0, 150, 50)  # Size of the help button
@@ -43,23 +43,32 @@ class MenuView:
         else:
             pygame.draw.rect(surface, color, rect)
 
+    def draw_faded_rect(self, surface, rect, color):
+        """Draw a rectangle with a faded end."""
+        for i in range(rect.width):
+            alpha = 255 - (255 * i // rect.width)
+            faded_color = (color[0], color[1], color[2], alpha)
+            pygame.draw.line(surface, faded_color, (rect.x + i, rect.y), (rect.x + i, rect.y + rect.height))
+
     def show_menu(self):
         info = pygame.display.Info()
         WIDTH, HEIGHT = info.current_w, info.current_h
         
-        # Define menu options with more separation
-        play_text = self.menu_font.render("Play", True, (0, 0, 0))
-        play_rect = play_text.get_rect(center=(WIDTH // 2 - 200, HEIGHT // 2 + 100))
-        shop_rect = self.shop_button_image.get_rect(center=(WIDTH // 2 + 200, HEIGHT // 2 + 100))
-        quit_text = self.menu_font.render("Quit", True, (0, 0, 0))
-        quit_rect = quit_text.get_rect(center=(WIDTH // 2, HEIGHT - 100))
+        # Define menu options
+        menu_options = ["Play", "Shop", "Help", "Quit"]
+        option_rects = []
+        max_width = 0
+        for i, option in enumerate(menu_options):
+            text_surface = self.menu_font.render(option, True, (255, 255, 255))  # Base color is white
+            rect = text_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 100 + i * 120))  # Significantly lowered the buttons
+            option_rects.append(rect)
+            if rect.width > max_width:
+                max_width = rect.width
         
-        # Smaller font size for the "Help" text on the button
-        help_text = self.help_font.render("Help", True, (255, 255, 255))
-        self.help_button_rect.center = (WIDTH // 2, HEIGHT // 2 + 200)
+        # Define the size of the background rectangles
+        bg_width = max_width + 300  # Increase width
+        bg_height = option_rects[0].height + 40  # Ensure all rectangles have the same height
         
-        # List of menu options to navigate
-        options = [play_rect, shop_rect, self.help_button_rect, quit_rect]
         selected_option = 0
         waiting = True
 
@@ -70,9 +79,9 @@ class MenuView:
                     exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_DOWN:
-                        selected_option = (selected_option + 1) % len(options)
+                        selected_option = (selected_option + 1) % len(menu_options)
                     elif event.key == pygame.K_UP:
-                        selected_option = (selected_option - 1) % len(options)
+                        selected_option = (selected_option - 1) % len(menu_options)
                     elif event.key == pygame.K_RETURN:
                         if selected_option == 0:  # Play
                             waiting = False
@@ -85,36 +94,34 @@ class MenuView:
                             pygame.quit()
                             exit()
 
-            # Draw the background and logo
-            self.screen.fill((255, 255, 255))
+            # Draw the background
+            self.screen.fill((0, 0, 0))  # Dark background
             self.screen.blit(self.background_image, (0, 0))
-            self.screen.blit(self.title_image, (WIDTH // 2 - self.title_image.get_width() // 2, HEIGHT // 6))
 
-            # Draw menu buttons
-            play_button_color = (200, 200, 200) if selected_option == 0 else (150, 150, 150)
-            shop_button_color = (200, 200, 200) if selected_option == 1 else (150, 150, 150)
-            help_button_color = (200, 200, 200) if selected_option == 2 else (150, 150, 150)
-            quit_button_color = (200, 200, 200) if selected_option == 3 else (150, 150, 150)
+            # Draw the logo at the top center
+            logo_rect = self.logo_image.get_rect(center=(WIDTH // 2, HEIGHT // 4))
+            self.screen.blit(self.logo_image, logo_rect)
 
-            # Draw the buttons with rounded borders
-            self.draw_rounded_rect(self.screen, play_button_color, play_rect.inflate(50, 10), 10)
-            self.draw_rounded_rect(self.screen, help_button_color, self.help_button_rect, 5)
-            self.draw_rounded_rect(self.screen, quit_button_color, quit_rect.inflate(50, 10), 10)
+            # Draw menu options with rounded backgrounds
+            for i, option in enumerate(menu_options):
+                rect = option_rects[i]
+                if selected_option == i:
+                    if option == "Quit":
+                        color = (255, 0, 0)  # Red for selected Quit option
+                    else:
+                        color = (255, 255, 0)  # Yellow for other selected options
+                    bg_color = (50, 50, 50)  # Dark grey background for selected option
+                else:
+                    color = (255, 255, 255)  # White for unselected options
+                    bg_color = (30, 30, 30)  # Darker grey background for unselected options
 
-            # Render option texts
-            play_text = self.menu_font.render("Play", True, (255, 0, 0) if selected_option == 0 else (0, 0, 0))
-            quit_text = self.menu_font.render("Quit", True, (255, 0, 0) if selected_option == 3 else (0, 0, 0))
+                # Draw rounded background
+                bg_rect = pygame.Rect(WIDTH // 2 - bg_width // 2, rect.y - 20, bg_width, bg_height)
+                self.draw_rounded_rect(self.screen, bg_color, bg_rect, 20)
 
-            # Draw option texts
-            self.screen.blit(play_text, play_rect)
-            self.screen.blit(quit_text, quit_rect)
-            # Draw the shop button image with a background for selection
-            if selected_option == 1:
-                pygame.draw.rect(self.screen, shop_button_color, shop_rect.inflate(20, 20), border_radius=10)
-            self.screen.blit(self.shop_button_image, shop_rect)
-            # Place the "Help" text centered within the larger button
-            self.screen.blit(help_text, (self.help_button_rect.x + (self.help_button_rect.width - help_text.get_width()) // 2,
-                                         self.help_button_rect.y + (self.help_button_rect.height - help_text.get_height()) // 2))
+                # Draw text
+                text_surface = self.menu_font.render(option, True, color)
+                self.screen.blit(text_surface, rect)
 
             # Show help window if active
             if self.help_active:
