@@ -18,6 +18,9 @@ from PIL import Image
 class GameController:
     def __init__(self):
         self.init_display()
+        self.reset_game()
+
+    def reset_game(self):
         pygame.mouse.set_visible(False)
         self.clock = pygame.time.Clock()
         self.menu_view = MenuView(self.screen)
@@ -46,14 +49,16 @@ class GameController:
         self.controller_enemy_interval = 60000  # 60 seconds in milliseconds
         self.paused = False
         self.chosen_upgrades = {}
-
+        self.pause_font = pygame.font.Font('assets/fonts/pixel.ttf', 74)
+        self.options_font = pygame.font.Font('assets/fonts/pixel.ttf', 48)
+        
         # Cargar imagen de fondo
         self.background_image = pygame.image.load('assets/images/background_game.png').convert()
         self.background_image = pygame.transform.scale(self.background_image, (self.screen.get_width(), self.screen.get_height()))
 
         # Preload upgrade images
         self.game_view.preload_upgrade_images(available_upgrades)
-
+        
     def init_display(self):
         info = pygame.display.Info()
         self.screen = pygame.display.set_mode((info.current_w, info.current_h), pygame.RESIZABLE)
@@ -67,70 +72,90 @@ class GameController:
             self.player = Player(character_name=selected_character_name)
 
     def run(self):
-        self.menu_view.show_menu()
-        self.select_character()  # Selección de personaje antes del juego
-        self.start_time = pygame.time.get_ticks()  # Set start_time after character selection
-        self.game_data = load_data()
-        self.coins = self.game_data.get("coins", 0)
-        self.top_scores = self.game_data.get("scoreboard", [])
-        self.unlocked_characters = self.game_data.get("unlocked_characters", [])
-        self.rocks = []
-        self.trees = []
-        num_trees = random.randint(5, 10)
-        num_rocks = random.randint(8, 20)
-        for _ in range(num_rocks):
-            while True:
-                rock = Rock(self.screen.get_width(), self.screen.get_height())
-                # Verificar que la roca no esté en la misma posición que el jugador
-                if not check_collision(self.player, rock):  # Implementar la función check_collision para verificar
-                    self.rocks.append(rock)
-                    break  # Salir del ciclo si la roca se genera en una posición válida
-        for _ in range(num_trees):
-            while True:
-                tree = Tree(self.screen.get_width(), self.screen.get_height())
-                # Verificar que el árbol no esté en la misma posición que el jugador
-                if not check_collision(self.player, tree):
-                    self.trees.append(tree)
-                    break
+        while True:
+            pygame.init()  # Re-initialize pygame
+            self.init_display()  # Re-initialize display
+            self.menu_view.show_menu()
+            self.reset_game()
+            self.select_character()  # Selección de personaje antes del juego
+            self.start_time = pygame.time.get_ticks()  # Set start_time after character selection
+            self.game_data = load_data()
+            self.coins = self.game_data.get("coins", 0)
+            self.top_scores = self.game_data.get("scoreboard", [])
+            self.unlocked_characters = self.game_data.get("unlocked_characters", [])
+            self.rocks = []
+            self.trees = []
+            num_trees = random.randint(5, 10)
+            num_rocks = random.randint(8, 20)
+            for _ in range(num_rocks):
+                while True:
+                    rock = Rock(self.screen.get_width(), self.screen.get_height())
+                    # Verificar que la roca no esté en la misma posición que el jugador
+                    if not check_collision(self.player, rock):  # Implementar la función check_collision para verificar
+                        self.rocks.append(rock)
+                        break  # Salir del ciclo si la roca se genera en una posición válida
+            for _ in range(num_trees):
+                while True:
+                    tree = Tree(self.screen.get_width(), self.screen.get_height())
+                    # Verificar que el árbol no esté en la misma posición que el jugador
+                    if not check_collision(self.player, tree):
+                        self.trees.append(tree)
+                        break
 
-        if not self.player:
-            print("No character selected, exiting the game.")
-            self.running = False
-            return
-        pygame.mouse.set_visible(False)
+            if not self.player:
+                print("No character selected, exiting the game.")
+                self.running = False
+                return
+            pygame.mouse.set_visible(False)
 
-        while self.running:
-            self.screen.fill((0, 0, 0))
+            while self.running:
+                self.screen.fill((0, 0, 0))
 
-            self.screen.blit(self.background_image, (0, 0))
+                self.screen.blit(self.background_image, (0, 0))
 
-            # Lógica del juego y actualización de pantalla
-            self.handle_events()
-            if self.paused:
-                self.show_pause_menu()
-            elif not self.upgrade_menu_active:
-                self.update_game()
-            else:
-                self.game_view.show_upgrade_options(self.options, self.selected_option)
+                # Lógica del juego y actualización de pantalla
+                self.handle_events()
+                if self.paused:
+                    self.show_pause_menu()
+                elif not self.upgrade_menu_active:
+                    self.update_game()
+                else:
+                    self.game_view.show_upgrade_options(self.options, self.selected_option)
 
-            pygame.display.update()
-            self.clock.tick(60)
+                pygame.display.update()
+                self.clock.tick(60)
 
-        self.end_game()
-        pygame.quit()
+            self.end_game()
 
     def end_game(self):
         """Finaliza el juego, muestra pantalla de Game Over con animación y texto, añade monedas ganadas y actualiza el scoreboard si es necesario."""
-        
+
+        # Finalizar el juego y limpiar recursos
+        self.coins += self.score
+        print(f"Partida finalizada. Has ganado {self.score} monedas.")
+
+        # Verificar si el score entra en el top 3
+        if self.update_scoreboard(self.score):
+            initials = self.enter_initials()
+            # Actualizar la última entrada en el top 3 con las iniciales del jugador
+            for entry in self.top_scores:
+                if entry["score"] == self.score and entry["initials"] == "":
+                    entry["initials"] = initials
+                    break
+
+        # Guardar cambios en JSON
+        self.game_data["scoreboard"] = self.top_scores
+        self.game_data["coins"] = self.coins
+        save_data(self.game_data)
+
         # Inicializar pygame y configurar pantalla
-        pygame.init() 
         pygame.display.set_caption("Game Over")
-        
+
         # Cargar el GIF con Pillow y extraer fotogramas
         gif_path = "assets/images/perder.gif"
         gif = Image.open(gif_path)
         gif_frames = []
-        
+
         try:
             while True:
                 frame = gif.copy()
@@ -154,13 +179,14 @@ class GameController:
         game_over_image = pygame.transform.scale(game_over_image, (500, 400))  # Redimensionar la imagen si es necesario
         game_over_rect = game_over_image.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 4))  # Posición centrada en la parte superior
 
-        # Loop para mostrar la animación de "Game Over" durante unos segundos
-        start_time = time.time()
+        # Loop para mostrar la animación de "Game Over" indefinidamente hasta que se presione una tecla
         frame_index = 0
-        while time.time() - start_time < 4:  # Mostrar durante 4 segundos
+        while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                    exit()
+                elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
                     return
 
             # Dibujar el fondo, el GIF y la imagen de "Game Over"
@@ -175,29 +201,7 @@ class GameController:
             # Avanzar al siguiente fotograma
             frame_index = (frame_index + 1) % len(gif_frames)
             time.sleep(0.1)  # Controlar la velocidad de reproducción
-
-
-        # Finalizar el juego y limpiar recursos
-        self.coins += self.score
-        print(f"Partida finalizada. Has ganado {self.score} monedas.")
-
-        # Verificar si el score entra en el top 3
-        if self.update_scoreboard(self.score):
-            initials = self.enter_initials()
-            # Actualizar la última entrada en el top 3 con las iniciales del jugador
-            for entry in self.top_scores:
-                if entry["score"] == self.score and entry["initials"] == "":
-                    entry["initials"] = initials
-                    break
-
-        # Guardar cambios en JSON
-        self.game_data["scoreboard"] = self.top_scores
-        self.game_data["coins"] = self.coins
-        save_data(self.game_data)
-
-        # Cerrar ventana de pygame
-        pygame.quit()
-    
+            
     def update_scoreboard(self, score):
         """Verifica si el score entra en el top 3 y prepara la entrada para iniciales si lo hace."""
         # Añadir una entrada temporal con iniciales vacías si el score califica para el top 3
@@ -278,17 +282,21 @@ class GameController:
 
     def show_pause_menu(self):
         # Dibujar el fondo del menú de pausa
-        pause_font = pygame.font.Font(None, 74)
-        options_font = pygame.font.Font(None, 48)
         options = ["Resume", "Quit"]
 
-        pause_text = pause_font.render("Paused", True, (255, 255, 255))
-        self.screen.blit(pause_text, (self.screen.get_width() // 2 - pause_text.get_width() // 2, 150))
+        pause_text = self.pause_font.render("Paused", True, (255, 255, 255))
+        pause_rect = pause_text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 4))
+        self.screen.blit(pause_text, pause_rect)
+
+        # Calculate the vertical position for the options to be centered
+        total_height = len(options) * self.options_font.get_height() + (len(options) - 1) * 20
+        start_y = (self.screen.get_height() - total_height) // 2
 
         for i, option in enumerate(options):
             color = (255, 0, 0) if i == self.selected_option else (255, 255, 255)
-            option_text = options_font.render(option, True, color)
-            self.screen.blit(option_text, (self.screen.get_width() // 2 - option_text.get_width() // 2, 300 + i * 60))
+            option_text = self.options_font.render(option, True, color)
+            option_rect = option_text.get_rect(center=(self.screen.get_width() // 2, start_y + i * (self.options_font.get_height() + 20)))
+            self.screen.blit(option_text, option_rect)
 
     def update_game(self):
         keys = pygame.key.get_pressed()
@@ -304,14 +312,33 @@ class GameController:
             tree.draw(self.screen)
             if check_collision(self.player, tree):
                 self.player.x, self.player.y = original_x, original_y  # Revert position if collision occurs
-            
 
         self.player.draw(self.screen)
         self.player.draw_experience_bar(self.screen)
         self.player.update()
 
+        # Calculate angle between player and mouse position
         mouse_pos = pygame.mouse.get_pos()
-        projectiles = self.player.shoot(mouse_pos)
+        dx = mouse_pos[0] - (self.player.x + self.player.size // 2)
+        dy = mouse_pos[1] - (self.player.y + self.player.size // 2)
+        angle = math.atan2(dy, dx)
+
+        # Restrict aiming to a circle around the player
+        aim_radius = 45  # Radius of the aiming circle
+        aim_x = self.player.x + self.player.size // 2 + math.cos(angle) * aim_radius
+        aim_y = self.player.y + self.player.size // 2 + math.sin(angle) * aim_radius
+
+        # Rotate pointer image
+        rotated_pointer = pygame.transform.rotate(self.pointer_image, -math.degrees(angle) + 90)  # Adjust rotation to account for upward orientation
+
+        # Position the pointer image at the aiming position
+        pointer_rect = rotated_pointer.get_rect(center=(aim_x, aim_y))
+
+        # Draw rotated pointer image
+        self.screen.blit(rotated_pointer, pointer_rect)
+
+        # Adjust shooting to use the aiming position
+        projectiles = self.player.shoot((aim_x, aim_y))
 
         if projectiles:
             if isinstance(projectiles, tuple):
@@ -399,24 +426,6 @@ class GameController:
             else:
                 enemy_type = MouseEnemy
             self.enemies.append(enemy_type(spawn_x, spawn_y))
-
-        # Calculate angle between player and mouse position
-        mouse_pos = pygame.mouse.get_pos()
-        dx = mouse_pos[0] - (self.player.x + self.player.size // 2)
-        dy = mouse_pos[1] - (self.player.y + self.player.size // 2)
-        angle = math.degrees(math.atan2(dy, dx))
-
-        # Rotate pointer image
-        rotated_pointer = pygame.transform.rotate(self.pointer_image, -angle + 90)  # Adjust rotation to account for upward orientation
-
-        # Position the pointer image further in front of the player
-        pointer_distance = 50  # Increased distance from the player
-        pointer_x = self.player.x + self.player.size // 2 + math.cos(math.radians(angle)) * pointer_distance
-        pointer_y = self.player.y + self.player.size // 2 + math.sin(math.radians(angle)) * pointer_distance
-        pointer_rect = rotated_pointer.get_rect(center=(pointer_x, pointer_y))
-
-        # Draw rotated pointer image
-        self.screen.blit(rotated_pointer, pointer_rect)
 
         self.game_view.show_score(self.score)
         self.game_view.show_time(self.start_time)

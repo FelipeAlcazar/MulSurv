@@ -1,22 +1,23 @@
 {
     "scoreboard": [
         {
-            "initials": "PIT",
-            "score": 134
+            "initials": "SAS",
+            "score": 10
         },
         {
-            "initials": "JPG",
-            "score": 94
+            "initials": "DDS",
+            "score": 9
         },
         {
-            "initials": "GOD",
-            "score": 90
+            "initials": "SDS",
+            "score": 9
         }
     ],
-    "coins": 1658,
+    "coins": 1715,
     "unlocked_characters": [
         "DefaultPlayer",
         "Miau Miau",
-        "Mario"
+        "Mario",
+        "Brillo"
     ]
 }
