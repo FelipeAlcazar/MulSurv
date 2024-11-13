@@ -7,6 +7,7 @@ from src.views.characterSelectionView import CharacterSelectionView
 from src.utils.collision import check_collision
 from src.views.gameView import GameView
 from src.views.menuView import MenuView
+from src.views.shopView import ShopView
 from src.models.rock import Rock
 from src.models.tree import Tree
 from src.utils.data_manager import load_data, save_data
@@ -66,11 +67,23 @@ class GameController:
 
     def select_character(self):
         """Muestra la pantalla de selección de personaje y asigna el personaje seleccionado."""
-        selection_view = CharacterSelectionView(self.screen)
-        selected_character_name = selection_view.run()
-        if selected_character_name:
-            self.player = Player(character_name=selected_character_name)
+        while True:
+            selection_view = CharacterSelectionView(self.screen)
+            selected_character_name = selection_view.run()
+            if selected_character_name == "store":
+                self.show_shop()
+            elif selected_character_name:
+                self.player = Player(character_name=selected_character_name)
+                break
+            else:
+                print("No character selected, returning to menu.")
+                self.menu_view.show_menu()
 
+    def show_shop(self):
+        """Muestra la pantalla de la tienda."""
+        shop_view = ShopView(self.screen)
+        shop_view.run()
+        
     def run(self):
         while True:
             pygame.init()  # Re-initialize pygame
@@ -78,6 +91,8 @@ class GameController:
             self.menu_view.show_menu()
             self.reset_game()
             self.select_character()  # Selección de personaje antes del juego
+            if not self.player:
+                continue  # Return to menu if no character is selected
             self.start_time = pygame.time.get_ticks()  # Set start_time after character selection
             self.game_data = load_data()
             self.coins = self.game_data.get("coins", 0)

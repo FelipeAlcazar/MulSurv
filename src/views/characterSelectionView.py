@@ -26,6 +26,7 @@ class CharacterSelectionView:
         self.highlight_color = (255, 215, 0)
         self.box_color = (50, 50, 50, 200)
         self.border_color = (200, 200, 200)
+        self.back_button_color = (200, 0, 0)  # Color del botón "Volver" (rojo)
         
         # Datos de los personajes
         self.characters = list(Player.predefined_characters.keys())
@@ -40,6 +41,19 @@ class CharacterSelectionView:
         self.unlocking = False  # Nueva variable para gestionar el estado de desbloqueo
         self.selected_character = None  # Almacena el personaje seleccionado
 
+        # Button properties
+        self.button_width = 200
+        self.button_height = 50
+        self.button_color = (70, 70, 70)
+        self.button_text_color = (255, 255, 255)
+        self.button_font = pygame.font.Font('assets/fonts/pixel.ttf', 24)
+        self.button_rect = pygame.Rect(
+            (self.screen.get_width() - self.button_width) // 2,
+            self.screen.get_height() - self.button_height - 20,
+            self.button_width,
+            self.button_height
+        )
+        
         # Load the pixel font
         self.font = pygame.font.Font('assets/fonts/pixel.ttf', 36)
         self.title_font = pygame.font.Font('assets/fonts/pixel.ttf', 48)
@@ -63,14 +77,15 @@ class CharacterSelectionView:
         # Título
         title_text = self.title_font.render("Select Your Character", True, self.text_color)
         title_x = self.screen.get_width() // 2 - title_text.get_width() // 2
-        self.screen.blit(title_text, (title_x, 50))
+        self.screen.blit(title_text, (title_x, 200))  # Lower the title
 
         # Configuración de recuadros
         box_width = 220
         box_height = 300
         spacing = 50
-        start_x = (self.screen.get_width() - ((box_width + spacing) * len(self.characters) - spacing)) // 2
-        start_y = self.screen.get_height() // 3
+        total_width = (box_width + spacing) * len(self.characters) - spacing
+        start_x = (self.screen.get_width() - total_width) // 2
+        start_y = (self.screen.get_height() - box_height) // 2  # Center the character boxes vertically
 
         for i, character_name in enumerate(self.characters):
             character_data = self.characters_data[character_name]
@@ -94,6 +109,13 @@ class CharacterSelectionView:
             if os.path.exists(image_path):
                 character_image = pygame.image.load(image_path).convert_alpha()
                 character_image = pygame.transform.scale(character_image, (box_width - 20, box_height // 2))
+                if character_name not in self.unlocked_characters:
+                    # Convert the image to black and white
+                    character_image = character_image.copy()
+                    arr = pygame.surfarray.pixels3d(character_image)
+                    avg = arr.mean(axis=2, keepdims=True)
+                    arr[:] = avg
+                    del arr
                 image_x = box_x + (box_width - character_image.get_width()) // 2
                 self.screen.blit(character_image, (image_x, box_y + 10))
 
@@ -101,48 +123,41 @@ class CharacterSelectionView:
             name_text = self.name_font.render(character_name, True, self.text_color)
             name_x = box_x + (box_width - name_text.get_width()) // 2
             self.screen.blit(name_text, (name_x, box_y + box_height // 2 + 20))
-            
-            character_costs = {
-                "DefaultPlayer": 0,    # Por ejemplo, el personaje predeterminado es gratuito
-                "Brillo": 500,
-                "Mario": 50,
-                "Miau Miau": 10000,
-                # Agrega más personajes y sus costos aquí
-            }
 
-            # Mostrar estadísticas o costo si está bloqueado
-            if character_name != "DefaultPlayer":
-                cost = character_costs.get(character_name, 50)  # Obtener el costo del personaje, por defecto 50 si no está en el diccionario
-                unlock_text = ""
-                unlock_color = (255, 0, 0)  # Rojo si no se puede desbloquear
-                if character_name in self.unlocked_characters:
-                    unlock_text = "Unlocked"
-                    unlock_color = (0, 255, 0)  # Verde si ya está desbloqueado
-                else:
-                    if self.coins >= cost:
-                        unlock_text = f"Unlock for {cost} Coins"
-                        unlock_color = (0, 255, 0)  # Verde si se puede desbloquear
-                    else:
-                        unlock_text = f"Locked (Cost: {cost} Coins)"
-
-                unlock_text_render = self.unlock_font.render(unlock_text, True, unlock_color)
-                self.screen.blit(unlock_text_render, (box_x + (box_width - unlock_text_render.get_width()) // 2, box_y + box_height // 2 + 40))
-                if unlock_text != "Unlocked":  # Solo dibujar el candado si no está desbloqueado
-                    self.screen.blit(self.locked_image, (box_x + box_width - 40, box_y + 10))
-
-            # Nombre del arma
-            weapon_name = character_data["weapon_name"]
-            weapon_text = self.weapon_font.render(f"Weapon: {weapon_name}", True, self.text_color)
-            weapon_x = box_x + (box_width - weapon_text.get_width()) // 2
-            self.screen.blit(weapon_text, (weapon_x, box_y + box_height // 2 + 70))
-
-            # Estadísticas del personaje
-            stats_y = box_y + box_height // 2 + 100
-            for stat, value in character_data.items():
-                if stat not in ["image_path", "weapon_name"]:
-                    stat_text = self.stats_font.render(f"{stat.capitalize()}: {value}", True, self.text_color)
-                    self.screen.blit(stat_text, (box_x + 10, stats_y))
+            if character_name in self.unlocked_characters:
+                # Mostrar estadísticas del personaje
+                stats_y = box_y + box_height // 2 + 60
+                speed_text = "Speed: Very Fast" if character_data["speed"] > 8 else "Speed: Fast" if character_data["speed"] > 6 else "Speed: Slow"
+                size_text = "Size: Large" if character_data["size"] > 50 else "Size: Small"
+                stats = [speed_text, size_text]
+                for stat in stats:
+                    stat_text = self.stats_font.render(stat, True, self.text_color)
+                    self.screen.blit(stat_text, (box_x + (box_width - stat_text.get_width()) // 2, stats_y))
                     stats_y += 30
+            else:
+                # Mostrar costo del personaje
+                cost = character_data.get("cost", 50)  # Ejemplo de costo por defecto
+                unlock_text = f"Locked"
+                unlock_color = (255, 0, 0)
+                unlock_text_render = self.unlock_font.render(unlock_text, True, unlock_color)
+                self.screen.blit(unlock_text_render, (box_x + (box_width - unlock_text_render.get_width()) // 2, box_y + box_height // 2 + 60))
+
+                # Make the lock image bigger and center it on the character image
+                lock_image = pygame.transform.scale(self.locked_image, (64, 64))
+                lock_x = image_x + (character_image.get_width() - lock_image.get_width()) // 2
+                lock_y = box_y + 10 + (character_image.get_height() - lock_image.get_height()) // 2
+                self.screen.blit(lock_image, (lock_x, lock_y))
+
+        # Draw the back button
+        if self.selected_index == len(self.characters):
+            pygame.draw.rect(self.screen, (255, 0, 0), self.button_rect.inflate(10, 10), border_radius=10)  # Highlighted
+            pygame.draw.rect(self.screen, (255, 255, 255), self.button_rect, 2, border_radius=10)  # White border
+        else:
+            pygame.draw.rect(self.screen, self.back_button_color, self.button_rect, border_radius=10)  # Normal
+
+        button_text = self.button_font.render("Back", True, self.text_color)
+        button_text_rect = button_text.get_rect(center=self.button_rect.center)
+        self.screen.blit(button_text, button_text_rect)
 
         self.draw_coins()  # Llamar a la función para dibujar las monedas
         pygame.display.flip()
@@ -156,35 +171,32 @@ class CharacterSelectionView:
                     exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        self.selected_index = (self.selected_index - 1) % len(self.characters)
+                        self.selected_index = (self.selected_index - 1) % (len(self.characters) + 1)
                     elif event.key == pygame.K_RIGHT:
-                        self.selected_index = (self.selected_index + 1) % len(self.characters)
+                        self.selected_index = (self.selected_index + 1) % (len(self.characters) + 1)
+                    elif event.key == pygame.K_DOWN:
+                        self.selected_index = len(self.characters)  # Select the "Back" button
+                    elif event.key == pygame.K_UP:
+                        if self.selected_index == len(self.characters):
+                            self.selected_index = 0  # Navigate back to the first character
                     elif event.key == pygame.K_RETURN:
-                        selected_character = self.characters[self.selected_index]
-                        cost = 50  # Costo de desbloqueo
-
-                        if self.unlocking:
-                            # Si se ha desbloqueado un personaje y se presiona Enter, permitir la selección
-                            print(f"{self.selected_character} selected!")  # Mensaje de selección
-                            self.unlocking = False  # Reiniciar estado
-                            return self.selected_character  # Retorna el personaje desbloqueado para jugar
-                        elif selected_character in self.unlocked_characters:
-                            # Si el personaje ya está desbloqueado, simplemente se selecciona
-                            print(f"{selected_character} selected!")  # Mensaje de selección
-                            return selected_character  # Retorna el personaje desbloqueado para jugar
+                        if self.selected_index == len(self.characters):
+                            return  # Return to the previous menu (MenuView)
                         else:
-                            # Si no está desbloqueado, intenta desbloquearlo
-                            if self.coins >= cost:
-                                self.coins -= cost  # Descontar monedas
-                                self.data["coins"] = self.coins  # Actualizar los datos
-                                self.unlocked_characters.append(selected_character)  # Agregar personaje a desbloqueados
-                                self.data["unlocked_characters"] = self.unlocked_characters  # Actualizar en el JSON
-                                save_data(self.data)  # Guardar los cambios en el JSON
-                                print(f"{selected_character} unlocked! Press Enter again to select.")  # Mensaje de desbloqueo
-                                self.unlocking = True  # Cambia el estado a desbloqueando
-                                self.selected_character = selected_character  # Guarda el personaje desbloqueado
+                            selected_character = self.characters[self.selected_index]
+                            if selected_character in self.unlocked_characters:
+                                print(f"{selected_character} selected!")  # Mensaje de selección
+                                return selected_character  # Retorna el personaje desbloqueado para jugar
                             else:
-                                print("Not enough coins!")  # Mensaje de error
+                                # Navigate to the store
+                                print("Navigating to the store...")
+                                return "store"  # Indica que se debe navegar a la tienda
+                    elif event.key == pygame.K_ESCAPE:
+                        return  # Act as the back button
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:  # Left mouse button
+                        if self.button_rect.collidepoint(event.pos):
+                            return  # Return to the previous menu (MenuView)
 
             self.draw()
             self.clock.tick(30)

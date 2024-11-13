@@ -129,7 +129,7 @@ class MenuView:
                     "Game Controls:",
                     "- Move: W/A/S/D",
                     "- Aim: Mouse",
-                    "- Shoot: Left Click",
+                    "- Shoot: Auto",
                     "- Pause: ESC"
                 ]
                 help_box_rect = pygame.Rect(100, 100, 400, 200)
