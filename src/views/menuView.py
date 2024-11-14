@@ -53,22 +53,26 @@ class MenuView:
     def show_menu(self):
         info = pygame.display.Info()
         WIDTH, HEIGHT = info.current_w, info.current_h
-        
+
         # Define menu options
         menu_options = ["Play", "Shop", "Help", "Quit"]
         option_rects = []
         max_width = 0
+
+        # Calculate scaling factor based on screen height
+        scale_factor = HEIGHT / 1080  # Assuming 1080p as the base resolution
+
         for i, option in enumerate(menu_options):
             text_surface = self.menu_font.render(option, True, (255, 255, 255))  # Base color is white
-            rect = text_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 100 + i * 120))  # Significantly lowered the buttons
+            rect = text_surface.get_rect(center=(WIDTH // 2, int(HEIGHT // 2 + 100 * scale_factor + i * 120 * scale_factor)))  # Adjusted positions
             option_rects.append(rect)
             if rect.width > max_width:
                 max_width = rect.width
-        
+
         # Define the size of the background rectangles
-        bg_width = max_width + 300  # Increase width
-        bg_height = option_rects[0].height + 40  # Ensure all rectangles have the same height
-        
+        bg_width = int((max_width + 300) * scale_factor)  # Adjusted width
+        bg_height = int((option_rects[0].height + 40) * scale_factor)  # Adjusted height
+
         selected_option = 0
         waiting = True
 
@@ -99,7 +103,7 @@ class MenuView:
             self.screen.blit(self.background_image, (0, 0))
 
             # Draw the logo at the top center
-            logo_rect = self.logo_image.get_rect(center=(WIDTH // 2, HEIGHT // 4))
+            logo_rect = self.logo_image.get_rect(center=(WIDTH // 2, int(HEIGHT // 4 * scale_factor)))
             self.screen.blit(self.logo_image, logo_rect)
 
             # Draw menu options with rounded backgrounds
@@ -116,8 +120,8 @@ class MenuView:
                     bg_color = (30, 30, 30)  # Darker grey background for unselected options
 
                 # Draw rounded background
-                bg_rect = pygame.Rect(WIDTH // 2 - bg_width // 2, rect.y - 20, bg_width, bg_height)
-                self.draw_rounded_rect(self.screen, bg_color, bg_rect, 20)
+                bg_rect = pygame.Rect(WIDTH // 2 - bg_width // 2, rect.y - int(20 * scale_factor), bg_width, bg_height)
+                self.draw_rounded_rect(self.screen, bg_color, bg_rect, int(20 * scale_factor))
 
                 # Draw text
                 text_surface = self.menu_font.render(option, True, color)
@@ -132,11 +136,11 @@ class MenuView:
                     "- Shoot: Auto",
                     "- Pause: ESC"
                 ]
-                help_box_rect = pygame.Rect(100, 100, 400, 200)
-                self.draw_rounded_rect(self.screen, (50, 50, 50), help_box_rect, 10)
-                
+                help_box_rect = pygame.Rect(100, 100, int(400 * scale_factor), int(200 * scale_factor))
+                self.draw_rounded_rect(self.screen, (50, 50, 50), help_box_rect, int(10 * scale_factor))
+
                 for i, line in enumerate(help_info):
                     line_surface = self.help_font.render(line, True, (255, 255, 255))
-                    self.screen.blit(line_surface, (help_box_rect.x + 10, help_box_rect.y + 10 + i * 30))
+                    self.screen.blit(line_surface, (help_box_rect.x + 10, help_box_rect.y + 10 + i * int(30 * scale_factor)))
 
             pygame.display.update()
