@@ -296,14 +296,37 @@ class GameController:
                         self.upgrade_menu_active = False
 
     def show_pause_menu(self):
-        # Dibujar el fondo del menú de pausa
-        options = ["Resume", "Quit"]
+        # Draw the current game state
+        self.screen.fill((0, 0, 0))
+        self.screen.blit(self.background_image, (0, 0))
+        self.player.draw(self.screen)
+        for rock in self.rocks:
+            rock.draw(self.screen)
+        for tree in self.trees:
+            tree.draw(self.screen)
+        for enemy in self.enemies:
+            enemy.draw(self.screen)
+        for projectile in self.projectiles:
+            projectile.draw(self.screen)
+        for exp in self.experience_points:
+            exp.draw(self.screen)
+        self.game_view.show_score(self.score)
+        self.game_view.show_time(self.start_time)
+        self.game_view.show_health(self.player.health)
+        self.game_view.show_chosen_upgrades(self.chosen_upgrades)
 
+        # Grey out the screen
+        grey_overlay = pygame.Surface(self.screen.get_size())
+        grey_overlay.set_alpha(128)  # Adjust transparency level (0-255)
+        grey_overlay.fill((0, 0, 0))  # Black color
+        self.screen.blit(grey_overlay, (0, 0))
+
+        # Draw the pause menu
+        options = ["Resume", "Quit"]
         pause_text = self.pause_font.render("Paused", True, (255, 255, 255))
         pause_rect = pause_text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 4))
         self.screen.blit(pause_text, pause_rect)
 
-        # Calculate the vertical position for the options to be centered
         total_height = len(options) * self.options_font.get_height() + (len(options) - 1) * 20
         start_y = (self.screen.get_height() - total_height) // 2
 
