@@ -32,9 +32,9 @@ class MenuView:
         self.help_active = False  # Control if help is active
 
         # Load the pixel font
-        self.font = pygame.font.Font('assets/fonts/pixel.ttf', 36)
-        self.help_font = pygame.font.Font('assets/fonts/pixel.ttf', 28)
-        self.menu_font = pygame.font.Font('assets/fonts/pixel.ttf', 74)
+        self.font = pygame.font.Font('assets/fonts/pixel.ttf', 26)
+        self.help_font = pygame.font.Font('assets/fonts/pixel.ttf', 20)
+        self.menu_font = pygame.font.Font('assets/fonts/pixel.ttf', 60)
 
     def draw_rounded_rect(self, surface, color, rect, corner_radius):
         """Draw a rectangle with rounded corners."""
@@ -103,7 +103,7 @@ class MenuView:
             self.screen.blit(self.background_image, (0, 0))
 
             # Draw the logo at the top center
-            logo_rect = self.logo_image.get_rect(center=(WIDTH // 2, int(HEIGHT // 4 * scale_factor)))
+            logo_rect = self.logo_image.get_rect(center=(WIDTH // 2, int(HEIGHT // 3 * scale_factor)))
             self.screen.blit(self.logo_image, logo_rect)
 
             # Draw menu options with rounded backgrounds
