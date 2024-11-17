@@ -2,18 +2,18 @@
     "scoreboard": [
         {
             "initials": "HEE",
-            "score": 19
+            "score": 11
         },
         {
             "initials": "SAS",
             "score": 10
         },
         {
-            "initials": "DDS",
-            "score": 9
+            "initials": "HOL",
+            "score": 7
         }
     ],
-    "coins": 1190,
+    "coins": 1264,
     "unlocked_characters": [
         "DefaultPlayer",
         "Mario",
