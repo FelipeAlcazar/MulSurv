@@ -1,5 +1,6 @@
 import pygame
 from src.views.shopView import ShopView  # Import the ShopView class
+from src.views.multiplayerView import MultiplayerView  # Import the MultiplayerView class
 
 class MenuView:
     def __init__(self, screen):
@@ -36,26 +37,12 @@ class MenuView:
         self.help_font = pygame.font.Font('assets/fonts/pixel.ttf', 20)
         self.menu_font = pygame.font.Font('assets/fonts/pixel.ttf', 60)
 
-    def draw_rounded_rect(self, surface, color, rect, corner_radius):
-        """Draw a rectangle with rounded corners."""
-        if corner_radius > 0:
-            pygame.draw.rect(surface, color, rect, border_radius=corner_radius)
-        else:
-            pygame.draw.rect(surface, color, rect)
-
-    def draw_faded_rect(self, surface, rect, color):
-        """Draw a rectangle with a faded end."""
-        for i in range(rect.width):
-            alpha = 255 - (255 * i // rect.width)
-            faded_color = (color[0], color[1], color[2], alpha)
-            pygame.draw.line(surface, faded_color, (rect.x + i, rect.y), (rect.x + i, rect.y + rect.height))
-
     def show_menu(self):
         info = pygame.display.Info()
         WIDTH, HEIGHT = info.current_w, info.current_h
 
         # Define menu options
-        menu_options = ["Play", "Shop", "Help", "Quit"]
+        menu_options = ["Play", "Multiplayer", "Shop", "Help", "Quit"]
         option_rects = []
         max_width = 0
 
@@ -88,15 +75,17 @@ class MenuView:
                         selected_option = (selected_option - 1) % len(menu_options)
                     elif event.key == pygame.K_RETURN:
                         if selected_option == 0:  # Play
-                            waiting = False
-                        elif selected_option == 1:  # Shop
+                            return "Play"
+                        elif selected_option == 1:  # Multiplayer
+                            multiplayer_view = MultiplayerView(self.screen)
+                            multiplayer_view.show_multiplayer_menu()
+                        elif selected_option == 2:  # Shop
                             shop_view = ShopView(self.screen)
                             shop_view.run()
-                        elif selected_option == 2:  # Help
+                        elif selected_option == 3:  # Help
                             self.help_active = not self.help_active  # Toggle help
-                        elif selected_option == 3:  # Quit
-                            pygame.quit()
-                            exit()
+                        elif selected_option == 4:  # Quit
+                            return "Quit"
 
             # Draw the background
             self.screen.fill((0, 0, 0))  # Dark background
@@ -144,3 +133,6 @@ class MenuView:
                     self.screen.blit(line_surface, (help_box_rect.x + 10, help_box_rect.y + 10 + i * int(30 * scale_factor)))
 
             pygame.display.update()
+
+    def draw_rounded_rect(self, surface, color, rect, radius):
+        pygame.draw.rect(surface, color, rect, border_radius=radius)

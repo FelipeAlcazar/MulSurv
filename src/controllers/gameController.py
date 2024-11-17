@@ -6,7 +6,6 @@ from src.models.upgrade import available_upgrades, decrease_speed
 from src.views.characterSelectionView import CharacterSelectionView
 from src.utils.collision import check_collision
 from src.views.gameView import GameView
-from src.views.menuView import MenuView
 from src.views.shopView import ShopView
 from src.utils.spawnManager import Spawner
 from src.models.rock import Rock
@@ -20,7 +19,8 @@ from src.utils.scoreManager import ScoreManager
 from src.views.pauseView import PauseView
 
 class GameController:
-    def __init__(self):
+    def __init__(self, screen):
+        self.screen = screen
         self.init_display()
         self.reset_game()
         self.pause_view = PauseView(self.screen, self.options_font, self.pause_font)
@@ -28,7 +28,6 @@ class GameController:
     def reset_game(self):
         pygame.mouse.set_visible(False)
         self.clock = pygame.time.Clock()
-        self.menu_view = MenuView(self.screen)
         self.game_view = GameView(self.screen)
         self.scoremanager = ScoreManager(self.screen)
         self.spawn_delay = 2000  # Milisegundos, cambiará con la dificultad
@@ -65,7 +64,7 @@ class GameController:
 
         # Preload upgrade images
         self.game_view.preload_upgrade_images(available_upgrades)
-        
+
     def init_display(self):
         info = pygame.display.Info()
         self.screen = pygame.display.set_mode((info.current_w, info.current_h), pygame.RESIZABLE)
@@ -82,22 +81,22 @@ class GameController:
                 self.player = Player(character_name=selected_character_name)
                 break
             else:
-                self.menu_view.show_menu()
+                self.running = False
+                return
 
     def show_shop(self):
         """Muestra la pantalla de la tienda."""
         shop_view = ShopView(self.screen)
         shop_view.run()
-        
+
     def run(self):
         while True:
             pygame.init()  # Re-initialize pygame
             self.init_display()  # Re-initialize display
-            self.menu_view.show_menu()
             self.reset_game()
             self.select_character()  # Selección de personaje antes del juego
             if not self.player:
-                continue  # Return to menu if no character is selected
+                return  # Return to menu if no character is selected
             self.start_time = pygame.time.get_ticks()  # Set start_time after character selection
             self.game_data = load_data()
             self.coins = self.game_data.get("coins", 0)
@@ -144,6 +143,7 @@ class GameController:
                 self.clock.tick(60)
 
             self.end_game()
+            return  # Return to menu after the game ends
 
     def end_game(self):
         """Finaliza el juego, muestra pantalla de Game Over con animación y texto, añade monedas ganadas y actualiza el scoreboard si es necesario."""
@@ -196,7 +196,6 @@ class GameController:
                         self.upgrade_menu_active = False
 
     def show_pause_menu(self):
-
         for rock in self.rocks:
             rock.draw(self.screen)
         for tree in self.trees:
