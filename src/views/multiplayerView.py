@@ -1,7 +1,6 @@
 import pygame
-from src.controllers.serverController import Server
 from src.controllers.clientController import Client
-from src.controllers.multiGameController import MultiPlayerGameController
+from src.controllers.multiGameController import Game
 
 class MultiplayerView:
     def __init__(self, screen):
@@ -62,30 +61,18 @@ class MultiplayerView:
                         selected_option = (selected_option + 1) % len(menu_options)
                     elif event.key == pygame.K_RETURN:
                         if menu_options[selected_option] == "Host":
-                            server = Server()
-                            server.run()
-                            game_controller = MultiPlayerGameController(self.screen, is_server=True)
-                            game_controller.run_multiplayer_game()
+                             game_controller = Game()
                         elif menu_options[selected_option] == "Join":
-                            client = Client()
-                            client.run()
-                            game_controller = MultiPlayerGameController(self.screen, is_server=False)
-                            game_controller.run_multiplayer_game()
+                            game_controller = Game()
                         return menu_options[selected_option]
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         for i, rect in enumerate(option_rects):
                             if rect.collidepoint(event.pos):
                                 if menu_options[i] == "Host":
-                                    server = Server()
-                                    server.run()
-                                    game_controller = MultiPlayerGameController(self.screen, is_server=True)
-                                    game_controller.run_multiplayer_game()
+                                    game_controller = Game()
                                 elif menu_options[i] == "Join":
-                                    client = Client()
-                                    client.run()
-                                    game_controller = MultiPlayerGameController(self.screen, is_server=False)
-                                    game_controller.run_multiplayer_game()
+                                    game_controller = Game()
                                 return menu_options[i]
 
             self.screen.fill((0, 0, 0))  # Dark background
