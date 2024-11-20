@@ -1,5 +1,6 @@
 import pygame
 import socket
+import threading
 from src.models.player import Player
 import math
 
@@ -32,6 +33,11 @@ class Game:
         # Crear jugador
         self.player = Player(character_name="DefaultPlayer")
         
+        # Start network thread
+        self.network_thread = threading.Thread(target=self.network_loop)
+        self.network_thread.daemon = True
+        self.network_thread.start()
+        
         # Bucle principal del juego
         self.run()
 
@@ -53,6 +59,11 @@ class Game:
             s.close() 
         except socket.error as msg:
             print(msg)
+
+    def network_loop(self):
+        while True:
+            self.send_pos()
+            pygame.time.delay(100)  # Adjust delay as needed
 
     def draw_character_with_label(self, img, x, y, label):
         """Función para dibujar un personaje con texto encima."""
@@ -101,13 +112,12 @@ class Game:
             projectile.move()  # Mover cada proyectil
             projectile.draw(self.win)  # Dibujar cada proyectil
 
-
     def run(self):
         """Bucle principal del juego."""
+        clock = pygame.time.Clock()
         run = True
         while run:
-            pygame.time.delay(100)
-            self.send_pos()
+            clock.tick(60)  # Limit frame rate to 60 FPS
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -118,7 +128,6 @@ class Game:
             self.player.move(keys)
             self.player.update()
             
-
             # Dibujar el fondo primero
             self.win.blit(self.background_img, (0, 0))
             self.update()
@@ -126,7 +135,6 @@ class Game:
             # Dibujar el personaje principal si está vivo
             if self.is_live == 1:
                 self.draw_character_with_label(self.player.image, self.player.x, self.player.y, "J1")
-                self.player.draw_experience_bar(self.win)  # Dibujar la barra de experiencia encima
                 
             for projectile in self.projectiles:
                 projectile.draw(self.win)
