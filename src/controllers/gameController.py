@@ -66,34 +66,33 @@ class GameController:
         self.game_view.preload_upgrade_images(available_upgrades)
 
     def init_display(self):
-        info = pygame.display.Info()
-        self.screen = pygame.display.set_mode((info.current_w, info.current_h), pygame.RESIZABLE)
+        # Configuración inicial sin volver a crear la pantalla
         pygame.display.set_caption("Multimedia Game")
+
 
     def select_character(self):
         """Muestra la pantalla de selección de personaje y asigna el personaje seleccionado."""
+        selection_view = CharacterSelectionView(self.screen)  # Usamos la misma pantalla
         while True:
-            selection_view = CharacterSelectionView(self.screen)
-            selected_character_name = selection_view.run()
+            selected_character_name = selection_view.run()  # Mostramos la vista de selección de personajes
             if selected_character_name == "store":
                 self.show_shop()
-            elif selected_character_name:
+            elif selected_character_name:  # Si selecciona un personaje válido
                 self.player = Player(character_name=selected_character_name)
-                break
+                break  # Salimos del bucle
             else:
-                self.running = False
+                self.running = False  # Si no selecciona nada, salimos del juego
                 return
+
 
     def show_shop(self):
         """Muestra la pantalla de la tienda."""
-        shop_view = ShopView(self.screen)
+        shop_view = ShopView(self.screen)  # Usamos la misma pantalla
         shop_view.run()
+
 
     def run(self):
         while True:
-            pygame.init()  # Re-initialize pygame
-            self.init_display()  # Re-initialize display
-            self.reset_game()
             self.select_character()  # Selección de personaje antes del juego
             if not self.player:
                 return  # Return to menu if no character is selected
