@@ -50,8 +50,8 @@ class MultiplayerView:
         )
         color_active = (50, 50, 200)
         color_inactive = (100, 100, 100)
-        color = color_inactive
-        active = False
+        color = color_active  # Cambiar para que comience activo
+        active = True  # El cuadro ya está activo desde el inicio
 
         while True:
             for event in pygame.event.get():
@@ -89,6 +89,7 @@ class MultiplayerView:
             self.screen.blit(instructions, instructions.get_rect(center=(self.screen.get_width() // 2, input_rect.y - 40)))
 
             pygame.display.update()
+
 
     def show_multiplayer_menu(self):
         # Obtener nickname antes de mostrar el menú principal
