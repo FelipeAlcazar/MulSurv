@@ -15,9 +15,7 @@ class CharacterSelectionView:
 
         # Load images
         self.coin_image = pygame.image.load("assets/images/coin.png").convert_alpha()
-        self.coin_image = pygame.transform.scale(self.coin_image, (48, 48))
         self.locked_image = pygame.image.load("assets/images/lock.png").convert_alpha()
-        self.locked_image = pygame.transform.scale(self.locked_image, (32, 32))
 
         # Colors
         self.text_color = (255, 255, 255)
@@ -35,31 +33,21 @@ class CharacterSelectionView:
         self.background_image = pygame.image.load("assets/images/background.png").convert()
         self.background_image = pygame.transform.scale(self.background_image, (self.screen.get_width(), self.screen.get_height()))
 
-        # Button properties
-        self.button_width = 200
-        self.button_height = 50
-        self.button_color = (70, 70, 70)
-        self.button_text_color = (255, 255, 255)
-        self.button_font = pygame.font.Font('assets/fonts/pixel.ttf', 24)
-        self.button_rect = pygame.Rect(
-            (self.screen.get_width() - self.button_width) // 2,
-            self.screen.get_height() - self.button_height - 20,
-            self.button_width,
-            self.button_height
-        )
-
-        # Load fonts
-        self.font = pygame.font.Font('assets/fonts/pixel.ttf', 36)
-        self.title_font = pygame.font.Font('assets/fonts/pixel.ttf', 48)
-        self.name_font = pygame.font.Font('assets/fonts/pixel.ttf', 24)
-        self.unlock_font = pygame.font.Font('assets/fonts/pixel.ttf', 20)
-        self.stats_font = pygame.font.Font('assets/fonts/pixel.ttf', 24)
+        # Fonts (adaptativos al tamaño de la pantalla)
+        self.title_font = pygame.font.Font('assets/fonts/pixel.ttf', int(self.screen.get_width() * 0.05))
+        self.name_font = pygame.font.Font('assets/fonts/pixel.ttf', int(self.screen.get_width() * 0.025))
+        self.stats_font = pygame.font.Font('assets/fonts/pixel.ttf', int(self.screen.get_width() * 0.02))
+        self.unlock_font = pygame.font.Font('assets/fonts/pixel.ttf', int(self.screen.get_width() * 0.02))
+        self.button_font = pygame.font.Font('assets/fonts/pixel.ttf', int(self.screen.get_width() * 0.03))
+        self.coin_font = pygame.font.Font('assets/fonts/pixel.ttf', int(self.screen.get_width() * 0.03))
 
     def draw_coins(self):
         """Dibuja la cantidad de monedas actuales."""
+        coin_size = int(self.screen.get_width() * 0.04)  # Tamaño proporcional al ancho
+        self.coin_image = pygame.transform.scale(self.coin_image, (coin_size, coin_size))
         self.screen.blit(self.coin_image, (10, 10))
-        coins_text = self.font.render(str(self.coins), True, self.text_color)
-        self.screen.blit(coins_text, (70, 24))
+        coins_text = self.coin_font.render(str(self.coins), True, self.text_color)
+        self.screen.blit(coins_text, (10 + coin_size + 10, 10 + coin_size // 4))
 
     def draw(self):
         """Dibuja la pantalla de selección de personaje."""
@@ -67,16 +55,15 @@ class CharacterSelectionView:
 
         # Título
         title_text = self.title_font.render("Select Your Character", True, self.text_color)
-        title_x = self.screen.get_width() // 2 - title_text.get_width() // 2
-        self.screen.blit(title_text, (title_x, 200))
+        title_x = (self.screen.get_width() - title_text.get_width()) // 2
+        self.screen.blit(title_text, (title_x, int(self.screen.get_height() * 0.1)))
 
-        # Cajas de personajes
-        box_width = 220
-        box_height = 300
-        spacing = 50
-        total_width = (box_width + spacing) * len(self.characters) - spacing
-        start_x = (self.screen.get_width() - total_width) // 2
-        start_y = (self.screen.get_height() - box_height) // 2
+        # Parámetros responsivos para las cajas
+        box_width = int(self.screen.get_width() * 0.2)
+        box_height = int(self.screen.get_height() * 0.4)
+        spacing = int(self.screen.get_width() * 0.02)
+        start_x = (self.screen.get_width() - (len(self.characters) * box_width + (len(self.characters) - 1) * spacing)) // 2
+        start_y = int(self.screen.get_height() * 0.3)
 
         for i, character_name in enumerate(self.characters):
             character_data = self.characters_data[character_name]
@@ -99,7 +86,10 @@ class CharacterSelectionView:
             image_path = character_data["image_path"]
             if os.path.exists(image_path):
                 character_image = pygame.image.load(image_path).convert_alpha()
-                character_image = pygame.transform.scale(character_image, (box_width - 20, box_height // 2))
+                char_width = box_width - 20
+                char_height = int(box_height * 0.5)
+                character_image = pygame.transform.scale(character_image, (char_width, char_height))
+
                 if character_name not in self.unlocked_characters:
                     # Imagen en escala de grises si está bloqueado
                     character_image = character_image.copy()
@@ -107,17 +97,18 @@ class CharacterSelectionView:
                     avg = arr.mean(axis=2, keepdims=True)
                     arr[:] = avg
                     del arr
-                image_x = box_x + (box_width - character_image.get_width()) // 2
+
+                image_x = box_x + (box_width - char_width) // 2
                 self.screen.blit(character_image, (image_x, box_y + 10))
 
             # Nombre del personaje
             name_text = self.name_font.render(character_name, True, self.text_color)
             name_x = box_x + (box_width - name_text.get_width()) // 2
-            self.screen.blit(name_text, (name_x, box_y + box_height // 2 + 20))
+            self.screen.blit(name_text, (name_x, box_y + char_height + 20))
 
-            # Si está desbloqueado, mostrar estadísticas
+            # Estadísticas o bloqueo
+            stats_y = box_y + char_height + 60
             if character_name in self.unlocked_characters:
-                stats_y = box_y + box_height // 2 + 60
                 speed_text = "Speed: Very Fast" if character_data["speed"] > 8 else "Speed: Fast" if character_data["speed"] > 6 else "Speed: Slow"
                 size_text = "Size: Large" if character_data["size"] > 50 else "Size: Small"
                 stats = [speed_text, size_text]
@@ -126,27 +117,31 @@ class CharacterSelectionView:
                     self.screen.blit(stat_text, (box_x + (box_width - stat_text.get_width()) // 2, stats_y))
                     stats_y += 30
             else:
-                # Mostrar si está bloqueado
                 cost = character_data.get("cost", 50)
-                unlock_text = "Locked"
-                unlock_color = (255, 0, 0)
-                unlock_text_render = self.unlock_font.render(unlock_text, True, unlock_color)
-                self.screen.blit(unlock_text_render, (box_x + (box_width - unlock_text_render.get_width()) // 2, box_y + box_height // 2 + 60))
+                unlock_text = f"Locked - {cost} Coins"
+                unlock_text_render = self.unlock_font.render(unlock_text, True, (255, 0, 0))
+                self.screen.blit(unlock_text_render, (box_x + (box_width - unlock_text_render.get_width()) // 2, stats_y))
 
-                lock_image = pygame.transform.scale(self.locked_image, (64, 64))
-                lock_x = image_x + (character_image.get_width() - lock_image.get_width()) // 2
-                lock_y = box_y + 10 + (character_image.get_height() - lock_image.get_height()) // 2
+                lock_size = int(box_width * 0.3)
+                lock_image = pygame.transform.scale(self.locked_image, (lock_size, lock_size))
+                lock_x = box_x + (box_width - lock_size) // 2
+                lock_y = box_y + 10 + (char_height - lock_size) // 2
                 self.screen.blit(lock_image, (lock_x, lock_y))
 
         # Botón de regreso
-        if self.selected_index == len(self.characters):
-            pygame.draw.rect(self.screen, (255, 0, 0), self.button_rect.inflate(10, 10), border_radius=10)
-            pygame.draw.rect(self.screen, (255, 255, 255), self.button_rect, 2, border_radius=10)
-        else:
-            pygame.draw.rect(self.screen, self.back_button_color, self.button_rect, border_radius=10)
+        button_width = int(self.screen.get_width() * 0.2)
+        button_height = int(self.screen.get_height() * 0.08)
+        button_x = (self.screen.get_width() - button_width) // 2
+        button_y = int(self.screen.get_height() * 0.85)
+        button_rect = pygame.Rect(button_x, button_y, button_width, button_height)
+
+        if self.selected_index == len(self.characters):  # Destacar si se selecciona el botón
+            pygame.draw.rect(self.screen, (255, 0, 0), button_rect.inflate(10, 10), border_radius=10)
+        pygame.draw.rect(self.screen, self.back_button_color, button_rect, border_radius=10)
+        pygame.draw.rect(self.screen, self.border_color, button_rect, 2, border_radius=10)
 
         button_text = self.button_font.render("Back", True, self.text_color)
-        button_text_rect = button_text.get_rect(center=self.button_rect.center)
+        button_text_rect = button_text.get_rect(center=button_rect.center)
         self.screen.blit(button_text, button_text_rect)
 
         self.draw_coins()
@@ -166,12 +161,12 @@ class CharacterSelectionView:
                     elif event.key == pygame.K_RIGHT:
                         self.selected_index = (self.selected_index + 1) % (len(self.characters) + 1)
                     elif event.key == pygame.K_DOWN:
-                        self.selected_index = len(self.characters)  # Ir a "Back"
+                        self.selected_index = len(self.characters)  # Ir al botón Back
                     elif event.key == pygame.K_UP:
                         if self.selected_index == len(self.characters):
-                            self.selected_index = 0  # Subir desde "Back"
+                            self.selected_index = 0  # Subir desde Back
                     elif event.key == pygame.K_RETURN:
-                        if self.selected_index == len(self.characters):  # Botón "Back"
+                        if self.selected_index == len(self.characters):  # Botón Back
                             return None
                         else:
                             selected_character = self.characters[self.selected_index]
@@ -181,11 +176,8 @@ class CharacterSelectionView:
                                 return "store"
                     elif event.key == pygame.K_ESCAPE:
                         return None
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        if self.button_rect.collidepoint(event.pos):
-                            return None
 
             self.draw()
             self.clock.tick(30)
+
 
