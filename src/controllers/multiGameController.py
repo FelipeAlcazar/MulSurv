@@ -2,6 +2,7 @@ import pygame
 import socket
 import threading
 from src.models.projectile import Projectile
+from src.views.characterSelectionView import CharacterSelectionView
 from src.models.player import Player
 import math
 
@@ -32,7 +33,9 @@ class Game:
         self.projectiles = []
 
         # Crear jugador
-        self.player = Player(character_name="DefaultPlayer")
+        self.player = []
+        self.select_character()
+
 
         # Start network thread
         self.network_thread = threading.Thread(target=self.network_loop)
@@ -62,6 +65,22 @@ class Game:
             s.close() 
         except socket.error as msg:
             print(msg)
+            
+            
+    def select_character(self):
+        """Muestra la pantalla de selección de personaje y asigna el personaje seleccionado."""
+        selection_view = CharacterSelectionView(self.win)  # Usamos la misma pantalla
+        while True:
+            selected_character_name = selection_view.run()  # Mostramos la vista de selección de personajes
+            if selected_character_name == "store":
+                self.show_shop()
+            elif selected_character_name:  # Si selecciona un personaje válido
+                self.player = Player(character_name=selected_character_name)
+                break  # Salimos del bucle
+            else:
+                self.running = False  # Si no selecciona nada, salimos del juego
+                return
+
 
     def send_shooting_coords(self, target_x, target_y):
         """Function to send shooting coordinates to the server."""
