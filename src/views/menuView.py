@@ -7,60 +7,66 @@ class MenuView:
         self.screen = screen
         pygame.init()
         info = pygame.display.Info()
-        
-        # Load background image
+
+        # Cargar la imagen de fondo
         self.background_image = pygame.image.load('assets/images/background.png')
         self.background_image = pygame.transform.scale(self.background_image, (self.screen.get_width(), self.screen.get_height()))
-        
-        # Load the shop button image and reduce its size while maintaining the aspect ratio
-        self.shop_button_image = pygame.image.load('assets/images/shopSign.png')
-        shop_button_width, shop_button_height = self.shop_button_image.get_size()
-        shop_scale_factor = 0.5  # Adjust the scale factor as needed
-        new_shop_button_width = int(shop_button_width * shop_scale_factor)
-        new_shop_button_height = int(shop_button_height * shop_scale_factor)
-        self.shop_button_image = pygame.transform.scale(self.shop_button_image, (new_shop_button_width, new_shop_button_height))
 
-        # Load the logo image
+        # Cargar la imagen del logo y reducir su tamaño
         self.logo_image = pygame.image.load('assets/images/logo.png')
         logo_width, logo_height = self.logo_image.get_size()
-        logo_scale_factor = 0.5  # Adjust the scale factor as needed
+        logo_scale_factor = 0.4
         new_logo_width = int(logo_width * logo_scale_factor)
         new_logo_height = int(logo_height * logo_scale_factor)
         self.logo_image = pygame.transform.scale(self.logo_image, (new_logo_width, new_logo_height))
 
-        # Define the help button
-        self.help_button_rect = pygame.Rect(0, 0, 150, 50)  # Size of the help button
-        self.help_active = False  # Control if help is active
-
-        # Load the pixel font
+        # Cargar la fuente de píxeles
         self.font = pygame.font.Font('assets/fonts/pixel.ttf', 26)
-        self.help_font = pygame.font.Font('assets/fonts/pixel.ttf', 20)
         self.menu_font = pygame.font.Font('assets/fonts/pixel.ttf', 60)
+
+        # Variables de ayuda
+        self.help_active = False
 
     def show_menu(self):
         info = pygame.display.Info()
         WIDTH, HEIGHT = info.current_w, info.current_h
 
-        # Define menu options
+        # Definir las opciones del menú, incluyendo las esquinas
         menu_options = ["Play", "Multiplayer", "Shop", "Help", "Quit"]
+        corner_options = ["Help", "Quit"]
         option_rects = []
-        max_width = 0
+        corner_rects = []
 
-        # Calculate scaling factor based on screen height
-        scale_factor = HEIGHT / 1080  # Assuming 1080p as the base resolution
+        # Calcular el factor de escala basado en la altura de la pantalla
+        scale_factor = HEIGHT / 1080
 
-        for i, option in enumerate(menu_options):
-            text_surface = self.menu_font.render(option, True, (255, 255, 255))  # Base color is white
-            rect = text_surface.get_rect(center=(WIDTH // 2, int(HEIGHT // 2 + 100 * scale_factor + i * 120 * scale_factor)))  # Adjusted positions
+        # Ajustar el espaciado entre botones y su tamaño
+        vertical_spacing = 150
+        logo_spacing = 100
+
+        # Obtener el ancho máximo (basado en "Multiplayer")
+        sample_text_surface = self.menu_font.render("Multiplayer", True, (255, 255, 255))
+        max_button_width = sample_text_surface.get_width() + 40  # Añadimos margen de 20 px a cada lado
+
+        # Botones centrales
+        for i, option in enumerate(menu_options[:3]):
+            text_surface = self.menu_font.render(option, True, (255, 255, 255))
+            rect = text_surface.get_rect(center=(WIDTH // 2, int(HEIGHT // 2 + logo_spacing + i * vertical_spacing * scale_factor)))
+            # Ajustar el ancho del rectángulo para que coincida con el ancho máximo
+            rect.width = max_button_width
             option_rects.append(rect)
-            if rect.width > max_width:
-                max_width = rect.width
 
-        # Define the size of the background rectangles
-        bg_width = int((max_width + 300) * scale_factor)  # Adjusted width
-        bg_height = int((option_rects[0].height + 40) * scale_factor)  # Adjusted height
+        # Botón de ayuda (esquina superior derecha)
+        help_button_rect = pygame.Rect(WIDTH - 160, 20, 150, 50)
+        corner_rects.append(help_button_rect)
 
+        # Botón de salir (esquina superior izquierda)
+        quit_button_rect = pygame.Rect(10, 20, 150, 50)
+        corner_rects.append(quit_button_rect)
+
+        # Variables de selección
         selected_option = 0
+        selected_corner = None  # None: menú central, 0: esquina derecha (Help), 1: esquina izquierda (Quit)
         waiting = True
 
         while waiting:
@@ -69,70 +75,113 @@ class MenuView:
                     pygame.quit()
                     exit()
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_DOWN:
-                        selected_option = (selected_option + 1) % len(menu_options)
-                    elif event.key == pygame.K_UP:
-                        selected_option = (selected_option - 1) % len(menu_options)
-                    elif event.key == pygame.K_RETURN:
-                        if selected_option == 0:  # Play
-                            return "Play"
-                        elif selected_option == 1:  # Multiplayer
-                            multiplayer_view = MultiplayerView(self.screen)
-                            multiplayer_view.show_multiplayer_menu()
-                        elif selected_option == 2:  # Shop
-                            shop_view = ShopView(self.screen)
-                            shop_view.run()
-                        elif selected_option == 3:  # Help
-                            self.help_active = not self.help_active  # Toggle help
-                        elif selected_option == 4:  # Quit
+                    if selected_corner is None:
+                        # Navegación dentro del menú central
+                        if event.key == pygame.K_DOWN:
+                            selected_option = (selected_option + 1) % len(option_rects)
+                        elif event.key == pygame.K_UP:
+                            selected_option = (selected_option - 1) % len(option_rects)
+                        elif event.key == pygame.K_RIGHT:
+                            selected_corner = 0  # Seleccionar esquina derecha (Help)
+                        elif event.key == pygame.K_LEFT:
+                            selected_corner = 1  # Seleccionar esquina izquierda (Quit)
+                    else:
+                        # Navegación desde una esquina
+                        if selected_corner == 0 and event.key == pygame.K_LEFT:
+                            selected_corner = None  # Volver al menú central desde Help
+                        elif selected_corner == 1 and event.key == pygame.K_RIGHT:
+                            selected_corner = None  # Volver al menú central desde Quit
+                    if event.key == pygame.K_RETURN:
+                        if selected_corner == 0:  # Help
+                            self.show_help_screen()  # Mostrar la pantalla de ayuda
+                        elif selected_corner == 1:  # Quit
                             return "Quit"
+                        elif selected_corner is None:
+                            if selected_option == 0:  # Play
+                                return "Play"
+                            elif selected_option == 1:  # Multiplayer
+                                multiplayer_view = MultiplayerView(self.screen)
+                                multiplayer_view.show_multiplayer_menu()
+                            elif selected_option == 2:  # Shop
+                                shop_view = ShopView(self.screen)
+                                shop_view.run()
 
-            # Draw the background
-            self.screen.fill((0, 0, 0))  # Dark background
+            # Dibujar el fondo
+            self.screen.fill((0, 0, 0))
             self.screen.blit(self.background_image, (0, 0))
 
-            # Draw the logo at the top center
-            logo_rect = self.logo_image.get_rect(center=(WIDTH // 2, int(HEIGHT // 3 * scale_factor)))
+            # Dibujar el logo
+            logo_rect = self.logo_image.get_rect(center=(WIDTH // 2, int(HEIGHT // 4)))
             self.screen.blit(self.logo_image, logo_rect)
 
-            # Draw menu options with rounded backgrounds
-            for i, option in enumerate(menu_options):
+            # Dibujar las opciones centrales
+            for i, option in enumerate(menu_options[:3]):
                 rect = option_rects[i]
-                if selected_option == i:
-                    if option == "Quit":
-                        color = (255, 0, 0)  # Red for selected Quit option
-                    else:
-                        color = (255, 255, 0)  # Yellow for other selected options
-                    bg_color = (50, 50, 50)  # Dark grey background for selected option
+                if selected_corner is None and selected_option == i:
+                    color = (255, 255, 0)  # Amarillo
+                    bg_color = (50, 50, 50)
                 else:
-                    color = (255, 255, 255)  # White for unselected options
-                    bg_color = (30, 30, 30)  # Darker grey background for unselected options
-
-                # Draw rounded background
-                bg_rect = pygame.Rect(WIDTH // 2 - bg_width // 2, rect.y - int(20 * scale_factor), bg_width, bg_height)
-                self.draw_rounded_rect(self.screen, bg_color, bg_rect, int(20 * scale_factor))
-
-                # Draw text
+                    color = (255, 255, 255)  # Blanco
+                    bg_color = (30, 30, 30)
+                bg_rect = pygame.Rect(WIDTH // 2 - max_button_width // 2, rect.y - 10, max_button_width, rect.height + 20)
+                self.draw_rounded_rect(self.screen, bg_color, bg_rect, 15)
                 text_surface = self.menu_font.render(option, True, color)
                 self.screen.blit(text_surface, rect)
 
-            # Show help window if active
-            if self.help_active:
-                help_info = [
-                    "Game Controls:",
-                    "- Move: W/A/S/D",
-                    "- Aim: Mouse",
-                    "- Shoot: Auto",
-                    "- Pause: ESC"
-                ]
-                help_box_rect = pygame.Rect(100, 100, int(400 * scale_factor), int(200 * scale_factor))
-                self.draw_rounded_rect(self.screen, (50, 50, 50), help_box_rect, int(10 * scale_factor))
-
-                for i, line in enumerate(help_info):
-                    line_surface = self.help_font.render(line, True, (255, 255, 255))
-                    self.screen.blit(line_surface, (help_box_rect.x + 10, help_box_rect.y + 10 + i * int(30 * scale_factor)))
+            # Dibujar los botones en las esquinas
+            for i, rect in enumerate(corner_rects):
+                if selected_corner == i:
+                    color = (255, 255, 0)  # Amarillo
+                    bg_color = (50, 50, 50)
+                else:
+                    color = (255, 255, 255)  # Blanco
+                    bg_color = (30, 30, 30)
+                self.draw_rounded_rect(self.screen, bg_color, rect, 15)
+                text_surface = self.font.render(corner_options[i], True, color)
+                self.screen.blit(text_surface, rect.move(50, 10))
 
             pygame.display.update()
 
     def draw_rounded_rect(self, surface, color, rect, radius):
         pygame.draw.rect(surface, color, rect, border_radius=radius)
+
+    def show_help_screen(self):
+        """Muestra una ventana con la ayuda del juego."""
+        WIDTH, HEIGHT = self.screen.get_width(), self.screen.get_height()
+
+        help_running = True
+        while help_running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    help_running = False  # Salir de la ventana de ayuda
+
+            # Dibujar la ventana de ayuda
+            self.screen.fill((0, 0, 0))  # Fondo negro
+            help_text = [
+                "CONTROLS:",
+                "- Move: W/A/S/D",
+                "- Attack: Mouse Left Click",
+                "",
+                "MODES:",
+                "- Solo: Fight waves of enemies!",
+                "- Multiplayer: Battle Royale mode.",
+                "",
+                "UPGRADES:",
+                "- Unlock powerful skills and items.",
+            ]
+            y_offset = 100
+            for line in help_text:
+                text_surface = self.font.render(line, True, (255, 255, 255))
+                text_rect = text_surface.get_rect(center=(WIDTH // 2, y_offset))
+                self.screen.blit(text_surface, text_rect)
+                y_offset += 50
+
+            pygame.display.update()
+
+
+
+
+
