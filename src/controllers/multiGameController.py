@@ -6,13 +6,9 @@ from src.models.player import Player
 import math
 
 class Game:
-    def __init__(self):
+    def _init_(self,nickname):
         pygame.init()
 
-        self.shooting_flag = False
-        self.shooting_timer = 0
-        self.shooting_interval = 500
-        
         # Inicialización de la ventana del juego
         self.win = pygame.display.set_mode((800, 800))
         pygame.display.set_caption("Multimedia Game")
@@ -27,14 +23,13 @@ class Game:
         # Variables del jugador y la red
         self.host = "localhost"
         self.port = 12345
-        self.name = "noname"
+        self.name = nickname
         self.user_id = 0
         self.is_live = 1
         self.cli_datas = []
         self.pointer_image = pygame.image.load('assets/images/pointer.png')  # Load pointer image
         self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))  # Scale down pointer image
         self.projectiles = []
-        self.displayed_shots = set()  # Set to keep track of displayed shots
         
         # Crear jugador
         self.player = Player(character_name="DefaultPlayer")
@@ -85,42 +80,15 @@ class Game:
     def network_loop(self):
         while True:
             self.send_pos()
-            pygame.time.delay(50)  # Adjust delay as needed
+            pygame.time.delay(30)  # Adjust delay as needed
 
     def draw_character_with_label(self, img, x, y, label):
         """Función para dibujar un personaje con texto encima."""
         self.win.blit(img, (x, y))
         text = self.font.render(label, True, (0, 0, 0))  # Texto en negro
         self.win.blit(text, (x + 5, y - 10))  # Posición del texto justo encima del personaje
-
-    def draw_aiming_indicator(self):
-        """Draw the aiming indicator."""
-        # Calculate angle between player and mouse position
-        mouse_pos = pygame.mouse.get_pos()
-        dx = mouse_pos[0] - (self.player.x + self.player.size // 2)
-        dy = mouse_pos[1] - (self.player.y + self.player.size // 2)
-        angle = math.atan2(dy, dx)
-
-        # Restrict aiming to a circle around the player
-        aim_radius = 45  # Radius of the aiming circle
-        aim_x = self.player.x + self.player.size // 2 + math.cos(angle) * aim_radius
-        aim_y = self.player.y + self.player.size // 2 + math.sin(angle) * aim_radius
-
-        # Rotate pointer image
-        rotated_pointer = pygame.transform.rotate(self.pointer_image, -math.degrees(angle) + 90)  # Adjust rotation to account for upward orientation
-
-        # Position the pointer image at the aiming position
-        pointer_rect = rotated_pointer.get_rect(center=(aim_x, aim_y))
-
-        # Draw rotated pointer image
-        self.win.blit(rotated_pointer, pointer_rect)
         
     def shooting(self):
-        current_time = pygame.time.get_ticks()
-        
-        if current_time - self.shooting_timer > self.shooting_interval:
-            self.shooting_timer = current_time
-
             # Calculate angle between player and mouse position
             mouse_pos = pygame.mouse.get_pos()
             dx = mouse_pos[0] - (self.player.x + self.player.size // 2)
@@ -131,6 +99,15 @@ class Game:
             aim_radius = 45  # Radius of the aiming circle
             aim_x = self.player.x + self.player.size // 2 + math.cos(angle) * aim_radius
             aim_y = self.player.y + self.player.size // 2 + math.sin(angle) * aim_radius
+
+            # Rotate pointer image
+            rotated_pointer = pygame.transform.rotate(self.pointer_image, -math.degrees(angle) + 90)  # Adjust rotation to account for upward orientation
+
+            # Position the pointer image at the aiming position
+            pointer_rect = rotated_pointer.get_rect(center=(aim_x, aim_y))
+
+            # Draw rotated pointer image
+            self.win.blit(rotated_pointer, pointer_rect)
 
             # Adjust shooting to use the aiming position
             projectiles = self.player.shoot((aim_x, aim_y))
@@ -144,17 +121,12 @@ class Game:
                 # Send shooting coordinates to the server
                 self.send_shooting_coords(aim_x, aim_y)
 
-        for projectile in self.projectiles[:]:  # Iterate over projectiles
-            projectile.move()  # Move each projectile
-            projectile.draw(self.win)  # Draw each projectile
-            
-    def display_shot(self, shooter_x, shooter_y, target_x, target_y, shot_id):
+            for projectile in self.projectiles[:]:  # Iterate over projectiles
+                projectile.move()  # Move each projectile
+                projectile.draw(self.win)  # Draw each projectile
+
+    def display_shot(self, shooter_x, shooter_y, target_x, target_y):
         """Display the shot from another player."""
-        if shot_id in self.displayed_shots:
-            return  # Skip if the shot has already been displayed
-
-        self.displayed_shots.add(shot_id)  # Add shot_id to the set of displayed shots
-
         # Calculate angle between shooter and target position
         dx = target_x - (shooter_x + self.player.size // 2)
         dy = target_y - (shooter_y + self.player.size // 2)
@@ -192,30 +164,32 @@ class Game:
             
             # Dibujar el fondo primero
             self.win.blit(self.background_img, (0, 0))
-            self.draw_aiming_indicator()  # Draw the aiming indicator
             self.shooting()
 
             # Dibujar el personaje principal si está vivo
             if self.is_live == 1:
-                self.draw_character_with_label(self.player.image, self.player.x, self.player.y, "J1")
+                self.draw_character_with_label(self.player.image, self.player.x, self.player.y, self.name)
                 
             for projectile in self.projectiles:
                 projectile.draw(self.win)
 
             # Dibujar otros personajes recibidos del servidor
             if self.cli_datas != []:
+                #print("Data from server: " + str(self.cli_datas))
                 for i in self.cli_datas:
                     if i != "0":
                         spl = i.split(":")
+                        #print("BEFORE CHECK: " + str(spl[-2]) + " " + str(spl[-1]) + " " + str(spl[0]) + " " + str(spl[1]) + " " + str(spl[2]) + " " + str(spl[3]) + " " + str(spl[4]))                            # Condition to not print the current player's info
                         if spl[0] == "pos":
+                            #print("ALL DATA IN POS: " + str(spl[-2]) + " " + str(spl[-1]) + " " + str(spl[0]) + " " + str(spl[1]) + " " + str(spl[2]) + " " + str(spl[3]) + " " + str(spl[4]))                            # Condition to not print the current player's info
                             if int(spl[-1]) != self.user_id:
+                                # Check if player is alive
                                 if int(spl[-2]) != 0:
-                                    self.draw_character_with_label(self.player.image, int(spl[2]), int(spl[3]), "J2")
+                                    self.draw_character_with_label(self.player.image, int(spl[2]), int(spl[3]), spl[1])
                         elif spl[0] == "shoot":
                             if int(spl[5]) != self.user_id:
-                                shot_id = f"{spl[2]}_{spl[3]}_{spl[6]}_{spl[7]}"
                                 print(f"ADDING SHOOT: {spl[2]} {spl[3]} {spl[6]} {spl[7]}")
-                                self.display_shot(int(spl[2]), int(spl[3]), float(spl[6]), float(spl[7]), shot_id)
+                                self.display_shot(int(spl[2]), int(spl[3]), float(spl[6]), float(spl[7]))
 
             pygame.display.update() 
 

@@ -1,9 +1,8 @@
 import pygame
 from src.controllers.clientController import Client
 from src.controllers.multiGameController import Game
-
 class MultiplayerView:
-    def __init__(self, screen):
+    def _init_(self, screen):
         self.screen = screen
         pygame.init()
         info = pygame.display.Info()
@@ -40,7 +39,60 @@ class MultiplayerView:
     def draw_rounded_rect(self, surface, color, rect, radius):
         pygame.draw.rect(surface, color, rect, border_radius=radius)
 
+    def get_nickname(self):
+        """Pantalla para capturar el nickname del usuario."""
+        nickname = ""
+        input_rect = pygame.Rect(
+            (self.screen.get_width() - 400) // 2,
+            (self.screen.get_height() - 50) // 2,
+            400,
+            50
+        )
+        color_active = (50, 50, 200)
+        color_inactive = (100, 100, 100)
+        color = color_inactive
+        active = False
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    # Activar/desactivar input según clic
+                    if input_rect.collidepoint(event.pos):
+                        active = not active
+                    else:
+                        active = False
+                    color = color_active if active else color_inactive
+                elif event.type == pygame.KEYDOWN:
+                    if active:
+                        if event.key == pygame.K_RETURN:
+                            return nickname  # Devuelve el nickname al presionar Enter
+                        elif event.key == pygame.K_BACKSPACE:
+                            nickname = nickname[:-1]
+                        else:
+                            nickname += event.unicode
+
+            self.screen.fill((0, 0, 0))  # Fondo oscuro
+            self.screen.blit(self.background_image, (0, 0))
+
+            # Dibujar cuadro de texto
+            pygame.draw.rect(self.screen, color, input_rect, border_radius=10)
+
+            # Renderizar el texto dentro del cuadro
+            text_surface = self.font.render(nickname, True, (255, 255, 255))
+            self.screen.blit(text_surface, (input_rect.x + 10, input_rect.y + 10))
+
+            # Instrucciones
+            instructions = self.font.render("Enter your nickname:", True, (255, 255, 255))
+            self.screen.blit(instructions, instructions.get_rect(center=(self.screen.get_width() // 2, input_rect.y - 40)))
+
+            pygame.display.update()
+
     def show_multiplayer_menu(self):
+        # Obtener nickname antes de mostrar el menú principal
+
         menu_options = ["Host", "Join"]
         option_rects = [self.host_button_rect, self.join_button_rect]
         selected_option = 0
@@ -61,18 +113,22 @@ class MultiplayerView:
                         selected_option = (selected_option + 1) % len(menu_options)
                     elif event.key == pygame.K_RETURN:
                         if menu_options[selected_option] == "Host":
-                             game_controller = Game()
+                            nickname = self.get_nickname()
+                            game_controller = Game(nickname)
                         elif menu_options[selected_option] == "Join":
-                            game_controller = Game()
+                            nickname = self.get_nickname()
+                            game_controller = Game(nickname)
                         return menu_options[selected_option]
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         for i, rect in enumerate(option_rects):
                             if rect.collidepoint(event.pos):
                                 if menu_options[i] == "Host":
-                                    game_controller = Game()
+                                    nickname = self.get_nickname()
+                                    game_controller = Game(nickname)
                                 elif menu_options[i] == "Join":
-                                    game_controller = Game()
+                                    nickname = self.get_nickname()
+                                    game_controller = Game(nickname)
                                 return menu_options[i]
 
             self.screen.fill((0, 0, 0))  # Dark background
