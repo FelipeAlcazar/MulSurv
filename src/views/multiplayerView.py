@@ -2,7 +2,7 @@ import pygame
 from src.controllers.clientController import Client
 from src.controllers.multiGameController import Game
 class MultiplayerView:
-    def _init_(self, screen):
+    def __init__(self, screen):
         self.screen = screen
         pygame.init()
         info = pygame.display.Info()

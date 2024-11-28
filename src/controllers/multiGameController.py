@@ -6,7 +6,7 @@ from src.models.player import Player
 import math
 
 class Game:
-    def _init_(self,nickname):
+    def __init__(self, nickname):
         pygame.init()
 
         # Inicialización de la ventana del juego
@@ -30,15 +30,15 @@ class Game:
         self.pointer_image = pygame.image.load('assets/images/pointer.png')  # Load pointer image
         self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))  # Scale down pointer image
         self.projectiles = []
-        
+
         # Crear jugador
         self.player = Player(character_name="DefaultPlayer")
-        
+
         # Start network thread
         self.network_thread = threading.Thread(target=self.network_loop)
         self.network_thread.daemon = True
         self.network_thread.start()
-        
+
         # Bucle principal del juego
         self.run()
 
