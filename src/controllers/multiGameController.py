@@ -19,7 +19,7 @@ class Game:
 
         # Cargar imágenes
         self.background_img = pygame.image.load("assets/images/background_game.png")  # Ruta a la imagen de fondo
-        self.background_img = pygame.transform.scale(self.background_img, (800, 800))
+        self.background_img = pygame.transform.scale(self.background_img, (screen_width, screen_height))
 
         # Configurar fuente para texto
         self.font = pygame.font.Font(None, 24)  # Fuente predeterminada, tamaño 24
