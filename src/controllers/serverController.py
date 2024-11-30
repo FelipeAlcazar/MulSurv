@@ -1,5 +1,3 @@
-# FILE: src/controllers/serverController.py
-
 import socket
 
 host = "localhost"
@@ -13,6 +11,9 @@ game_started = False  # Flag to track if the game has started
 # Append zero because we look if id != 0
 cli_datas.append(0)
 cli_data_next_count = 1
+
+# Track which clients have received the shooting data
+clients_acknowledged = set()
 
 def re_id(spl, cli_data_next_count):
     spl[-1] = str(cli_data_next_count)
@@ -58,7 +59,6 @@ while True:
     elif spl[0] == "ready_check":
         all_ready = len(ready_players) > 1  # Check if more than one player is ready
         c.send("all_ready".encode('utf-8') if all_ready else "not_ready".encode('utf-8'))
-        #print(f"Ready check: {'all_ready' if all_ready else 'not_ready'}")
     elif spl[0] == "ready":
         ready_players.add(int(spl[1]))
         player_statuses[spl[1]] = "ready"
@@ -66,7 +66,6 @@ while True:
     elif spl[0] == "status_check":
         status_message = ";".join([f"{name}:{status}" for name, status in player_statuses.items()])
         c.send(status_message.encode('utf-8'))
-        #print(f"Status check: {status_message}")
     elif spl[0] == "pos":
         if len(spl) > 1 and spl[-1].isdigit():
             index = int(spl[-1])
@@ -74,27 +73,22 @@ while True:
             while len(cli_datas) <= index:
                 cli_datas.append("")
             cli_datas[index] = ":".join(spl)
-        #print("position data received:", str(cli_datas))
         c.send(re_message(cli_datas, shooting_datas).encode('utf-8'))
-        # Clear shooting data after sending it
-        shooting_datas.clear()
+        clients_acknowledged.add(addr)
+        if len(clients_acknowledged) == len(player_statuses):
+            shooting_datas.clear()
+            clients_acknowledged.clear()
     elif spl[0] == "shoot":
         print(f"Shooting coordinates received: {spl[1:]}")
-        # Add shooting coordinates to shooting_datas
         shooting_datas.append(userdata)
         c.send(re_message(cli_datas, shooting_datas).encode('utf-8'))
     elif spl[0] == "start_game":
         print("Start game signal received")
         game_started = True  # Set the game started flag
     elif spl[0] == "check_start":
-        # Check if the game should start
         if game_started:
             c.send("start_game".encode('utf-8'))
         else:
             c.send("not_ready".encode('utf-8'))
 
-    #print("cli_datas:", str(cli_datas))
-    #print("ready_players:", str(ready_players))
-    #print("player_statuses:", str(player_statuses))
-    #print("shooting_datas:", str(shooting_datas))
     c.close()

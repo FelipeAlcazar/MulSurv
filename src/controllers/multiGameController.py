@@ -361,8 +361,7 @@ class Game:
         print(f"Adding projectile at ({projectile.x}, {projectile.y}) with direction ({projectile.dx}, {projectile.dy})")
         
         # Ensure only one projectile is added
-        if projectile not in self.projectiles:
-            self.projectiles.append(projectile)
+        self.projectiles.append(projectile)
     
     def run(self):
         """Bucle principal del juego."""
@@ -395,10 +394,10 @@ class Game:
                 projectile.draw(self.win)
 
             # Dibujar otros personajes recibidos del servidor
-            if self.cli_datas != []:
-                for i in self.cli_datas:
-                    if i != "0":
-                        spl = i.split(":")
+            if self.cli_datas:
+                for data in self.cli_datas:
+                    if data != "0":
+                        spl = data.split(":")
                         if spl[0] == "pos":
                             if int(spl[-1]) != self.user_id:
                                 self.draw_second_character_with_label(spl[-2], int(spl[2]), int(spl[3]), spl[1])
