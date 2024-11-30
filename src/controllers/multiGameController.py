@@ -12,8 +12,7 @@ class Game:
         pygame.init()
         # Obtener la resolución actual de la pantalla
         info = pygame.display.Info()
-        screen_width, screen_height = info.current_w, info.current_h
-        # Inicialización de la ventana del juego
+        screen_width, screen_height = info.current_w, info.current_h        # Inicialización de la ventana del juego
         self.win = pygame.display.set_mode((screen_width, screen_height), pygame.RESIZABLE)
         pygame.display.set_caption("Multimedia Game")
 
@@ -34,7 +33,7 @@ class Game:
         self.pointer_image = pygame.image.load('assets/images/pointer.png')  # Load pointer image
         self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))  # Scale down pointer image
         self.projectiles = []
-                # Inicializar las piedras con posiciones fijas
+        # Inicializar las piedras con posiciones fijas
         self.rocks = []
         rock_positions = [
             (250, 450), (600, 300), (850, 550), (900, 500),
@@ -51,7 +50,9 @@ class Game:
         self.player = []
         self.image_path = None
         self.select_character()
-
+        self.send_join_request()
+        
+        self.wait_for_all_players()
 
         # Start network thread
         self.network_thread = threading.Thread(target=self.network_loop)
@@ -61,6 +62,168 @@ class Game:
         # Bucle principal del juego
         self.run()
 
+    def wait_for_all_players(self):
+        """Wait for all players to be ready before starting the game."""
+        waiting = True
+        ready = False
+        start_game = False
+        ready_button_rect = pygame.Rect(
+            (self.win.get_width() - 200) // 2,
+            self.win.get_height() // 2 + 50,
+            200,
+            50
+        )
+        start_button_rect = pygame.Rect(
+            (self.win.get_width() - 200) // 2,
+            self.win.get_height() // 2 + 120,
+            200,
+            50
+        )
+        ready_button_color = (70, 70, 70)
+        ready_button_hover_color = (90, 90, 90)
+        ready_button_text_color = (255, 255, 255)
+        ready_button_font = pygame.font.Font('assets/fonts/pixel.ttf', 36)
+
+        while waiting:
+            mouse_pos = pygame.mouse.get_pos()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1 and ready_button_rect.collidepoint(event.pos):
+                        ready = True
+                        self.send_ready_status()
+                    elif event.button == 1 and start_button_rect.collidepoint(event.pos) and self.user_id == 1 and self.all_players_ready():
+                        start_game = True
+                        self.send_start_game()  # Send start game message to the server
+
+            self.win.fill((0, 0, 0))  # Dark background
+            self.win.blit(self.background_img, (0, 0))
+
+            # Display waiting message
+            waiting_message = self.font.render("Waiting for all players...", True, (255, 255, 255))
+            self.win.blit(waiting_message, waiting_message.get_rect(center=(self.win.get_width() // 2, self.win.get_height() // 2)))
+
+            # Draw "Ready" button if not ready
+            if not ready:
+                if ready_button_rect.collidepoint(mouse_pos):
+                    color = ready_button_hover_color
+                else:
+                    color = ready_button_color
+                pygame.draw.rect(self.win, color, ready_button_rect, border_radius=10)
+                ready_text = ready_button_font.render("Ready", True, ready_button_text_color)
+                self.win.blit(ready_text, ready_text.get_rect(center=ready_button_rect.center))
+
+            # Display player statuses
+            player_statuses = self.get_player_statuses()
+            for i, (player_name, is_ready) in enumerate(player_statuses):
+                if is_ready:
+                    status_text = self.font.render(f"{player_name} - Ready", True, (255, 255, 255))
+                else:
+                    status_text = self.font.render(f"{player_name}", True, (255, 255, 255))
+                status_rect = status_text.get_rect(center=(self.win.get_width() // 2, self.win.get_height() // 2 - 100 + i * 30))
+                self.win.blit(status_text, status_rect)
+
+            # Check if all players are ready
+            if self.all_players_ready() and len(player_statuses) > 1:
+                all_ready_message = self.font.render("All players are ready!", True, (0, 255, 0))
+                self.win.blit(all_ready_message, all_ready_message.get_rect(center=(self.win.get_width() // 2, self.win.get_height() // 2 + 100)))
+
+                # Draw "Start Game" button if the current player is the host (user_id == 1)
+                if self.user_id == 1:
+                    if start_button_rect.collidepoint(mouse_pos):
+                        color = ready_button_hover_color
+                    else:
+                        color = ready_button_color
+                    pygame.draw.rect(self.win, color, start_button_rect, border_radius=10)
+                    start_text = ready_button_font.render("Start Game", True, ready_button_text_color)
+                    self.win.blit(start_text, start_text.get_rect(center=start_button_rect.center))
+
+            # Check for start game signal from the server
+            s = socket.socket()
+            try:
+                s.connect((self.host, self.port))
+                s.sendall("check_start".encode('utf-8'))
+                response = s.recv(1024).decode("utf-8")
+                s.close()
+                if response == "start_game":
+                    start_game = True
+            except socket.error as msg:
+                print(msg)
+
+            pygame.display.update()
+
+            if start_game:
+                waiting = False  # Exit the waiting loop to start the game
+    
+    def send_start_game(self):
+        """Send start game message to the server."""
+        s = socket.socket()
+        try:
+            s.connect((self.host, self.port))
+            send_text = "start_game"
+            s.sendall(send_text.encode('utf-8'))
+            s.close()
+        except socket.error as msg:
+            print(msg)
+        
+    def get_player_statuses(self):
+        """Get the status of all players from the server."""
+        s = socket.socket()
+        try:
+            s.connect((self.host, self.port))
+            s.sendall("status_check".encode('utf-8'))
+            response = s.recv(1024).decode("utf-8")
+            s.close()
+            if response:
+                player_statuses = [tuple(player.split(":")) for player in response.split(";")]
+                return [(name, status == "ready") for name, status in player_statuses]
+            else:
+                return [(self.name, False)]  # Return the current player's status if no other players are present
+        except socket.error as msg:
+            print(msg)
+            return [(self.name, False)]  # Return the current player's status in case of an error
+
+    def send_ready_status(self):
+        """Send ready status to the server."""
+        s = socket.socket()
+        try:
+            s.connect((self.host, self.port))
+            send_text = f"ready:{self.user_id}"
+            s.sendall(send_text.encode('utf-8'))
+            s.close()
+        except socket.error as msg:
+            print(msg)
+
+    def send_join_request(self):
+        """Send join request to the server."""
+        s = socket.socket()
+        try:
+            s.connect((self.host, self.port))
+            send_text = f"join:{self.name}"
+            s.sendall(send_text.encode('utf-8'))
+            response = s.recv(1024).decode("utf-8")
+            spl = response.split(":")
+            if spl[0] == "id":
+                self.user_id = int(spl[1])
+            s.close()
+        except socket.error as msg:
+            print(msg)
+
+    def all_players_ready(self):
+        """Check if all players are ready."""
+        s = socket.socket()
+        try:
+            s.connect((self.host, self.port))
+            s.sendall("ready_check".encode('utf-8'))
+            response = s.recv(1024).decode("utf-8")
+            s.close()
+            return response == "all_ready"
+        except socket.error as msg:
+            print(msg)
+            return False
+    
     def send_pos(self):
         """Función para enviar posición al servidor."""
         s = socket.socket()
@@ -76,11 +239,25 @@ class Game:
             else:
                 self.cli_datas = yanit.split(";")
 
-            
             s.close() 
         except socket.error as msg:
             print(msg)
             
+    def receive_data(self):
+        """Receive data from the server."""
+        while True:
+            s = socket.socket()
+            try:
+                s.connect((self.host, self.port))
+                s.sendall("check_start".encode('utf-8'))
+                response = s.recv(1024).decode("utf-8")
+                s.close()
+                if response == "start_game":
+                    self.run()
+                    break  # Exit the loop after starting the game
+            except socket.error as msg:
+                print(msg)
+            pygame.time.delay(30)  # Adjust delay as needed
             
     def select_character(self):
         """Muestra la pantalla de selección de personaje y asigna el personaje seleccionado."""
@@ -96,7 +273,6 @@ class Game:
             else:
                 self.running = False  # Si no selecciona nada, salimos del juego
                 return
-
 
     def send_shooting_coords(self, target_x, target_y):
         """Function to send shooting coordinates to the server."""
@@ -131,41 +307,41 @@ class Game:
         self.win.blit(text, (x + 5, y - 10))  # Posición del texto justo encima del personaje
         
     def shooting(self):
-            # Calculate angle between player and mouse position
-            mouse_pos = pygame.mouse.get_pos()
-            dx = mouse_pos[0] - (self.player.x + self.player.size // 2)
-            dy = mouse_pos[1] - (self.player.y + self.player.size // 2)
-            angle = math.atan2(dy, dx)
+        # Calculate angle between player and mouse position
+        mouse_pos = pygame.mouse.get_pos()
+        dx = mouse_pos[0] - (self.player.x + self.player.size // 2)
+        dy = mouse_pos[1] - (self.player.y + self.player.size // 2)
+        angle = math.atan2(dy, dx)
 
-            # Restrict aiming to a circle around the player
-            aim_radius = 45  # Radius of the aiming circle
-            aim_x = self.player.x + self.player.size // 2 + math.cos(angle) * aim_radius
-            aim_y = self.player.y + self.player.size // 2 + math.sin(angle) * aim_radius
+        # Restrict aiming to a circle around the player
+        aim_radius = 45  # Radius of the aiming circle
+        aim_x = self.player.x + self.player.size // 2 + math.cos(angle) * aim_radius
+        aim_y = self.player.y + self.player.size // 2 + math.sin(angle) * aim_radius
 
-            # Rotate pointer image
-            rotated_pointer = pygame.transform.rotate(self.pointer_image, -math.degrees(angle) + 90)  # Adjust rotation to account for upward orientation
+        # Rotate pointer image
+        rotated_pointer = pygame.transform.rotate(self.pointer_image, -math.degrees(angle) + 90)  # Adjust rotation to account for upward orientation
 
-            # Position the pointer image at the aiming position
-            pointer_rect = rotated_pointer.get_rect(center=(aim_x, aim_y))
+        # Position the pointer image at the aiming position
+        pointer_rect = rotated_pointer.get_rect(center=(aim_x, aim_y))
 
-            # Draw rotated pointer image
-            self.win.blit(rotated_pointer, pointer_rect)
+        # Draw rotated pointer image
+        self.win.blit(rotated_pointer, pointer_rect)
 
-            # Adjust shooting to use the aiming position
-            projectiles = self.player.shoot((aim_x, aim_y))
+        # Adjust shooting to use the aiming position
+        projectiles = self.player.shoot((aim_x, aim_y))
 
-            if projectiles:
-                if isinstance(projectiles, tuple):
-                    self.projectiles.extend(projectiles)
-                else:
-                    self.projectiles.append(projectiles)
+        if projectiles:
+            if isinstance(projectiles, tuple):
+                self.projectiles.extend(projectiles)
+            else:
+                self.projectiles.append(projectiles)
 
-                # Send shooting coordinates to the server
-                self.send_shooting_coords(aim_x, aim_y)
+            # Send shooting coordinates to the server
+            self.send_shooting_coords(aim_x, aim_y)
 
-            for projectile in self.projectiles[:]:  # Iterate over projectiles
-                projectile.move()  # Move each projectile
-                projectile.draw(self.win)  # Draw each projectile
+        for projectile in self.projectiles[:]:  # Iterate over projectiles
+            projectile.move()  # Move each projectile
+            projectile.draw(self.win)  # Draw each projectile
 
     def display_shot(self, shooter_x, shooter_y, target_x, target_y):
         """Display the shot from another player."""
@@ -220,19 +396,14 @@ class Game:
 
             # Dibujar otros personajes recibidos del servidor
             if self.cli_datas != []:
-                #print("Data from server: " + str(self.cli_datas))
                 for i in self.cli_datas:
                     if i != "0":
                         spl = i.split(":")
-                        #print("BEFORE CHECK: " + str(spl[-2]) + " " + str(spl[-1]) + " " + str(spl[0]) + " " + str(spl[1]) + " " + str(spl[2]) + " " + str(spl[3]) + " " + str(spl[4]))                            # Condition to not print the current player's info
                         if spl[0] == "pos":
-                            #print("ALL DATA IN POS: " + str(spl[-2]) + " " + str(spl[-1]) + " " + str(spl[0]) + " " + str(spl[1]) + " " + str(spl[2]) + " " + str(spl[3]) + " " + str(spl[4]))                            # Condition to not print the current player's info
                             if int(spl[-1]) != self.user_id:
-                                print(f"spl[-2]: {spl[-2]}")
                                 self.draw_second_character_with_label(spl[-2], int(spl[2]), int(spl[3]), spl[1])
                         elif spl[0] == "shoot":
                             if int(spl[5]) != self.user_id:
-                                print(f"ADDING SHOOT: {spl[2]} {spl[3]} {spl[6]} {spl[7]}")
                                 self.display_shot(int(spl[2]), int(spl[3]), float(spl[6]), float(spl[7]))
 
             pygame.display.update() 

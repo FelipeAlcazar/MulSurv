@@ -1,5 +1,4 @@
 import pygame
-from src.controllers.clientController import Client
 from src.controllers.multiGameController import Game
 class MultiplayerView:
     def __init__(self, screen):
@@ -99,8 +98,6 @@ class MultiplayerView:
 
             pygame.display.update()
 
-
-
     def show_multiplayer_menu(self):
         # Obtener nickname antes de mostrar el menú principal
 
@@ -123,10 +120,7 @@ class MultiplayerView:
                     elif event.key == pygame.K_DOWN:
                         selected_option = (selected_option + 1) % len(menu_options)
                     elif event.key == pygame.K_RETURN:
-                        if menu_options[selected_option] == "Host":
-                            nickname = self.get_nickname()
-                            game_controller = Game(nickname)
-                        elif menu_options[selected_option] == "Join":
+                        if menu_options[selected_option] == "Host" or menu_options[selected_option] == "Join":
                             nickname = self.get_nickname()
                             game_controller = Game(nickname)
                         return menu_options[selected_option]
@@ -134,10 +128,7 @@ class MultiplayerView:
                     if event.button == 1:
                         for i, rect in enumerate(option_rects):
                             if rect.collidepoint(event.pos):
-                                if menu_options[i] == "Host":
-                                    nickname = self.get_nickname()
-                                    game_controller = Game(nickname)
-                                elif menu_options[i] == "Join":
+                                if menu_options[i] == "Host" or menu_options[i] == "Join":
                                     nickname = self.get_nickname()
                                     game_controller = Game(nickname)
                                 return menu_options[i]
