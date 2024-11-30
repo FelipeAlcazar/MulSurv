@@ -1,6 +1,7 @@
 import pygame
 import socket
 import threading
+from src.models.rock import Rock
 from src.models.projectile import Projectile
 from src.views.characterSelectionView import CharacterSelectionView
 from src.models.player import Player
@@ -9,9 +10,11 @@ import math
 class Game:
     def __init__(self, nickname):
         pygame.init()
-
+        # Obtener la resolución actual de la pantalla
+        info = pygame.display.Info()
+        screen_width, screen_height = info.current_w, info.current_h
         # Inicialización de la ventana del juego
-        self.win = pygame.display.set_mode((800, 800))
+        self.win = pygame.display.set_mode((screen_width, screen_height), pygame.RESIZABLE)
         pygame.display.set_caption("Multimedia Game")
 
         # Cargar imágenes
@@ -31,6 +34,18 @@ class Game:
         self.pointer_image = pygame.image.load('assets/images/pointer.png')  # Load pointer image
         self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))  # Scale down pointer image
         self.projectiles = []
+                # Inicializar las piedras con posiciones fijas
+        self.rocks = []
+        rock_positions = [
+            (250, 450), (600, 300), (850, 550), (900, 500),
+            (410, 370), (730, 460), (1020, 250), (550, 600),
+            (700, 520), (1100, 380)
+        ]
+        
+        for pos in rock_positions:
+            rock = Rock(screen_width, screen_height)
+            rock.rect.x, rock.rect.y = pos
+            self.rocks.append(rock)
 
         # Crear jugador
         self.player = []
@@ -191,6 +206,9 @@ class Game:
             
             # Dibujar el fondo primero
             self.win.blit(self.background_img, (0, 0))
+            # Dibujar las piedras
+            for rock in self.rocks:
+                rock.draw(self.win)
             self.shooting()
 
             # Dibujar el personaje principal si está vivo

@@ -52,6 +52,7 @@ class MultiplayerView:
         color_inactive = (100, 100, 100)
         color = color_active  # Cambiar para que comience activo
         active = True  # El cuadro ya está activo desde el inicio
+        error_message = ""  # Variable para mensaje de error
 
         while True:
             for event in pygame.event.get():
@@ -68,7 +69,10 @@ class MultiplayerView:
                 elif event.type == pygame.KEYDOWN:
                     if active:
                         if event.key == pygame.K_RETURN:
-                            return nickname  # Devuelve el nickname al presionar Enter
+                            if nickname.strip() == "":  # Si el nickname está vacío
+                                error_message = "Nickname cannot be empty!"  # Mensaje de error
+                            else:
+                                return nickname  # Devuelve el nickname al presionar Enter
                         elif event.key == pygame.K_BACKSPACE:
                             nickname = nickname[:-1]
                         else:
@@ -88,7 +92,13 @@ class MultiplayerView:
             instructions = self.font.render("Enter your nickname:", True, (255, 255, 255))
             self.screen.blit(instructions, instructions.get_rect(center=(self.screen.get_width() // 2, input_rect.y - 40)))
 
+            # Mostrar mensaje de error si el nickname está vacío
+            if error_message:
+                error_surface = self.font.render(error_message, True, (255, 0, 0))  # Rojo para error
+                self.screen.blit(error_surface, (self.screen.get_width() // 2 - error_surface.get_width() // 2, input_rect.y + 70))
+
             pygame.display.update()
+
 
 
     def show_multiplayer_menu(self):
