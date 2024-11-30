@@ -9,7 +9,7 @@ class Player(Character):
         "DefaultPlayer": {
             "image_path": 'assets/images/default_character.png',
             "weapon_name": "Gun",
-            "size": 60,
+            "size": 50,
             "speed": 5
         },
         "Mario": {
@@ -37,6 +37,7 @@ class Player(Character):
         info = pygame.display.Info()
         if (character_name in self.predefined_characters):
             character_info = self.predefined_characters[character_name]
+            self.image_path = character_info["image_path"]
             weapon = Weapon(character_info["weapon_name"])
             super().__init__(info.current_w // 2, info.current_h // 2, character_info["size"], character_info["speed"], character_info["image_path"], weapon)
         else:

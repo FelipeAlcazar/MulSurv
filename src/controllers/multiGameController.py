@@ -34,6 +34,7 @@ class Game:
 
         # Crear jugador
         self.player = []
+        self.image_path = None
         self.select_character()
 
 
@@ -50,17 +51,16 @@ class Game:
         s = socket.socket()
         try:
             s.connect((self.host, self.port)) 
-            send_text = f"pos:{self.name}:{self.player.x}:{self.player.y}:{self.is_live}:{self.user_id}"
+            send_text = f"pos:{self.name}:{self.player.x}:{self.player.y}:{self.player.image_path}:{self.user_id}"
             s.sendall(send_text.encode('utf-8'))
             yanit = s.recv(1024).decode("utf-8")
             
             if self.user_id == 0:
                 spl = yanit.split(":")
-                self.user_id = int(spl[-1])
-                print(str(self.user_id))
+                self.user_id = int(spl[1])
             else:
                 self.cli_datas = yanit.split(";")
-            print("Data send_pos:"+yanit)
+
             
             s.close() 
         except socket.error as msg:
@@ -76,6 +76,7 @@ class Game:
                 self.show_shop()
             elif selected_character_name:  # Si selecciona un personaje válido
                 self.player = Player(character_name=selected_character_name)
+                self.image_path = self.player.image_path
                 break  # Salimos del bucle
             else:
                 self.running = False  # Si no selecciona nada, salimos del juego
@@ -90,7 +91,6 @@ class Game:
             send_text = f"shoot:{self.name}:{self.player.x}:{self.player.y}:{self.is_live}:{self.user_id}:{target_x}:{target_y}"
             s.sendall(send_text.encode('utf-8'))
             yanit = s.recv(1024).decode("utf-8")
-            print("Data send_shooting_coords:" + yanit)
             self.cli_datas = yanit.split(";")
             s.close()
         except socket.error as msg:
@@ -104,6 +104,14 @@ class Game:
     def draw_character_with_label(self, img, x, y, label):
         """Función para dibujar un personaje con texto encima."""
         self.win.blit(img, (x, y))
+        text = self.font.render(label, True, (0, 0, 0))  # Texto en negro
+        self.win.blit(text, (x + 5, y - 10))  # Posición del texto justo encima del personaje
+        
+    def draw_second_character_with_label(self, img, x, y, label):
+        """Función para dibujar un personaje con texto encima."""
+        image_surface = pygame.image.load(img)
+        image_surface = pygame.transform.scale(image_surface, (50, 50))
+        self.win.blit(image_surface, (x, y))
         text = self.font.render(label, True, (0, 0, 0))  # Texto en negro
         self.win.blit(text, (x + 5, y - 10))  # Posición del texto justo encima del personaje
         
@@ -202,9 +210,8 @@ class Game:
                         if spl[0] == "pos":
                             #print("ALL DATA IN POS: " + str(spl[-2]) + " " + str(spl[-1]) + " " + str(spl[0]) + " " + str(spl[1]) + " " + str(spl[2]) + " " + str(spl[3]) + " " + str(spl[4]))                            # Condition to not print the current player's info
                             if int(spl[-1]) != self.user_id:
-                                # Check if player is alive
-                                if int(spl[-2]) != 0:
-                                    self.draw_character_with_label(self.player.image, int(spl[2]), int(spl[3]), spl[1])
+                                print(f"spl[-2]: {spl[-2]}")
+                                self.draw_second_character_with_label(spl[-2], int(spl[2]), int(spl[3]), spl[1])
                         elif spl[0] == "shoot":
                             if int(spl[5]) != self.user_id:
                                 print(f"ADDING SHOOT: {spl[2]} {spl[3]} {spl[6]} {spl[7]}")
