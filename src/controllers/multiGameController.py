@@ -22,6 +22,7 @@ class Game:
 
         # Configurar fuente para texto
         self.font = pygame.font.Font(None, 24)  # Fuente predeterminada, tamaño 24
+        self.shots = {}  # Dictionary to keep track of shots
 
         # Variables del jugador y la red
         self.host = "localhost"
@@ -345,23 +346,38 @@ class Game:
 
     def display_shot(self, shooter_x, shooter_y, target_x, target_y):
         """Display the shot from another player."""
-        # Calculate angle between shooter and target position
-        dx = target_x - (shooter_x + self.player.size // 2)
-        dy = target_y - (shooter_y + self.player.size // 2)
-        angle = math.atan2(dy, dx)
-
-        # Calculate direction based on the angle
-        direction_x = math.cos(angle)
-        direction_y = math.sin(angle)
-
-        # Create a projectile from the shooter's position
-        projectile = Projectile(shooter_x + self.player.size // 2, shooter_y + self.player.size // 2, direction_x * 10, direction_y * 10)
+        shot_key = (shooter_x, shooter_y, target_x, target_y)
         
-        # Debug print statement to check the number of projectiles
-        print(f"Adding projectile at ({projectile.x}, {projectile.y}) with direction ({projectile.dx}, {projectile.dy})")
+        current_time = pygame.time.get_ticks()
         
-        # Ensure only one projectile is added
-        self.projectiles.append(projectile)
+        # Debug statement to check if the shot is being processed
+        print(f"Processing shot: {shot_key} at time {current_time}")
+        
+        if shot_key not in self.shots or current_time - self.shots[shot_key] > 500:
+            # Calculate angle between shooter and target position
+            dx = target_x - (shooter_x + self.player.size // 2)
+            dy = target_y - (shooter_y + self.player.size // 2)
+            angle = math.atan2(dy, dx)
+
+            # Calculate direction based on the angle
+            direction_x = math.cos(angle)
+            direction_y = math.sin(angle)
+
+            # Create a projectile from the shooter's position
+            projectile = Projectile(shooter_x + self.player.size // 2, shooter_y + self.player.size // 2, direction_x * 10, direction_y * 10)
+            
+            # Debug print statement to check the number of projectiles
+            print(f"Adding projectile at ({projectile.x}, {projectile.y}) with direction ({projectile.dx}, {projectile.dy})")
+            
+            # Ensure only one projectile is added
+            self.projectiles.append(projectile)
+            self.shots[shot_key] = current_time  # Store the shot with the current time
+
+        # Remove old shots after half a second to prevent memory overflow
+        self.shots = {key: time for key, time in self.shots.items() if current_time - time < 1000}
+
+        # Debug statement to check the current shots dictionary
+        print(f"Current shots: {self.shots}")
     
     def run(self):
         """Bucle principal del juego."""
