@@ -491,7 +491,7 @@ class Game:
 
     def is_projectile_too_new(self, projectile):
         # Check if the projectile is older than 100 milliseconds
-        return time.time() - projectile.timestamp < 0.1
+        return time.time() - projectile.timestamp < 0.2
 
     def check_collision(self, projectile, x, y, width, height):
         collision = (projectile.x < x + width and
