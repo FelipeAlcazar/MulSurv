@@ -7,6 +7,7 @@ cli_datas = []
 ready_players = set()
 player_statuses = {}
 shooting_datas = []
+scores = {}
 game_started = False  # Flag to track if the game has started
 # Append zero because we look if id != 0
 cli_datas.append(0)
@@ -90,5 +91,13 @@ while True:
             c.send("start_game".encode('utf-8'))
         else:
             c.send("not_ready".encode('utf-8'))
+    elif spl[0] == "hit":
+        shooter_id = int(spl[1])
+        print(f"Player {shooter_id} hit another player")
+        # Incrementa el puntaje del jugador que disparó
+        if shooter_id not in scores:
+            scores[shooter_id] = 0
+        scores[shooter_id] += 1
+        c.send((f"score_update:{shooter_id}:{scores[shooter_id]}").encode('utf-8'))
 
     c.close()

@@ -1,3 +1,4 @@
+import time
 import pygame
 import socket
 import threading
@@ -6,6 +7,7 @@ from src.models.projectile import Projectile
 from src.views.characterSelectionView import CharacterSelectionView
 from src.models.player import Player
 import math
+import random
 
 class Game:
     def __init__(self, nickname):
@@ -30,6 +32,7 @@ class Game:
         self.name = nickname
         self.user_id = 0
         self.is_live = 1
+        self.score = 0
         self.cli_datas = []
         self.pointer_image = pygame.image.load('assets/images/pointer.png')  # Load pointer image
         self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))  # Scale down pointer image
@@ -185,6 +188,8 @@ class Game:
         except socket.error as msg:
             print(msg)
             return [(self.name, False)]  # Return the current player's status in case of an error
+    
+
 
     def send_ready_status(self):
         """Send ready status to the server."""
@@ -270,6 +275,9 @@ class Game:
             elif selected_character_name:  # Si selecciona un personaje válido
                 self.player = Player(character_name=selected_character_name)
                 self.image_path = self.player.image_path
+                screen_width, screen_height = self.win.get_width(), self.win.get_height()
+                self.player.x = random.randint(0, screen_width - self.player.size)
+                self.player.y = random.randint(0, screen_height - self.player.size)
                 break  # Salimos del bucle
             else:
                 self.running = False  # Si no selecciona nada, salimos del juego
@@ -343,6 +351,10 @@ class Game:
         for projectile in self.projectiles[:]:  # Iterate over projectiles
             projectile.move()  # Move each projectile
             projectile.draw(self.win)  # Draw each projectile
+        
+            if (projectile.x < 0 or projectile.x > self.win.get_width() or
+                    projectile.y < 0 or projectile.y > self.win.get_height()):
+                self.projectiles.remove(projectile)
 
     def display_shot(self, shooter_x, shooter_y, target_x, target_y):
         """Display the shot from another player."""
@@ -375,9 +387,14 @@ class Game:
 
         # Remove old shots after half a second to prevent memory overflow
         self.shots = {key: time for key, time in self.shots.items() if current_time - time < 1000}
-
         # Debug statement to check the current shots dictionary
         print(f"Current shots: {self.shots}")
+
+    def draw_score(self):
+        """Muestra el puntaje del jugador en la pantalla."""
+        score_text = self.font.render(f"Score: {self.score}", True, (255, 255, 255))
+        self.win.blit(score_text, (10, 10))
+
     
     def run(self):
         """Bucle principal del juego."""
@@ -394,7 +411,7 @@ class Game:
             keys = pygame.key.get_pressed()
             self.player.move(keys)
             self.player.update()
-            
+
             # Dibujar el fondo primero
             self.win.blit(self.background_img, (0, 0))
             # Dibujar las piedras
@@ -402,10 +419,8 @@ class Game:
                 rock.draw(self.win)
             self.shooting()
 
-            # Dibujar el personaje principal si está vivo
-            if self.is_live == 1:
-                self.draw_character_with_label(self.player.image, self.player.x, self.player.y, self.name)
-                
+            self.draw_character_with_label(self.player.image, self.player.x, self.player.y, self.name)
+
             for projectile in self.projectiles:
                 projectile.draw(self.win)
 
@@ -421,6 +436,69 @@ class Game:
                             if int(spl[5]) != self.user_id:
                                 self.display_shot(int(spl[2]), int(spl[3]), float(spl[6]), float(spl[7]))
 
-            pygame.display.update() 
+            # Detectar impactos de los proyectiles
+            self.detect_impact()
+            self.draw_score()
+            pygame.display.update()
 
-        pygame.quit()
+    def detect_impact(self):
+        """Detecta los impactos de los proyectiles con las piedras y otros jugadores."""
+        s = socket.socket()
+        message = None  # Inicializar la variable message
+
+        for projectile in self.projectiles[:]:  # Iterate over projectiles
+            hit_detected = False  # Variable to track if a hit is detected
+
+            for rock in self.rocks:
+                if self.check_collision(projectile, rock.rect.x, rock.rect.y, rock.rect.width, rock.rect.height):
+                    self.projectiles.remove(projectile)
+                    hit_detected = True
+                    break  # Exit the loop after detecting a collision
+
+            if hit_detected:
+                continue  # Skip checking other players if a rock collision is detected
+
+            for data in self.cli_datas:
+                if data != "0":
+                    spl = data.split(":")
+                    if spl[0] == "pos" and int(spl[-1]) != self.user_id:
+                        shooter_x, shooter_y = int(spl[2]), int(spl[3])
+                        if self.check_collision(projectile, shooter_x, shooter_y, self.player.size, self.player.size) and not self.is_projectile_too_new(projectile):
+                            self.projectiles.remove(projectile)
+                            message = f"hit:{self.user_id}"  # Asignar valor solo si hay colisión
+                            hit_detected = True
+                            break  # Exit the loop after detecting a collision
+
+            if hit_detected:
+                break  # Exit the loop after detecting a collision with a player
+
+        if message:  # Solo intentar enviar si hay un mensaje
+            try:
+                s.connect((self.host, self.port))
+                s.sendall(message.encode('utf-8'))
+                response = s.recv(1024).decode('utf-8')
+                if response.startswith("score_update:"):
+                    # Extraemos los datos usando el separador ":"
+                    parts = response.split(":")
+                    if len(parts) == 3:
+                        shooter_id = parts[1]  # ID del jugador
+                        score = int(parts[2])  # Score del jugador, convertido a entero
+                        if shooter_id == str(self.user_id):  # Ensure the score update is for the current player
+                            self.score = score  # Actualizamos el puntaje del jugador
+                s.close()
+            except socket.error as msg:
+                print(msg)
+
+    def is_projectile_too_new(self, projectile):
+        # Check if the projectile is older than 100 milliseconds
+        return time.time() - projectile.timestamp < 0.1
+
+    def check_collision(self, projectile, x, y, width, height):
+        collision = (projectile.x < x + width and
+                    projectile.x + projectile.size > x and
+                    projectile.y < y + height and
+                    projectile.y + projectile.size > y)
+        return collision
+            
+        
+    pygame.quit()

@@ -1,3 +1,4 @@
+import time
 import pygame
 
 class Projectile:
@@ -7,6 +8,8 @@ class Projectile:
         self.dx = dx
         self.dy = dy
         self.size = 10
+        self.timestamp = time.time()  # Add a timestamp when the projectile is created
+
 
     def move(self):
         self.x += self.dx
