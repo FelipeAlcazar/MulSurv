@@ -53,9 +53,9 @@ class Game:
             self.rocks.append(rock)
         
         tree_positions = [
-            (100, 100), (200, 200), (300, 300), (400, 400),
-            (500, 500), (600, 600), (700, 700), (800, 800),
-            (900, 900), (1000, 1000)
+            (100, 100), (300, 500), (600, 700), (800, 200),
+            (1200, 400), (1400, 600), (1600, 800), (1800, 300),
+            (1500, 500), (1700, 700)
         ]
         
         for pos in tree_positions:
@@ -440,9 +440,18 @@ class Game:
 
             # Control del movimiento del personaje
             keys = pygame.key.get_pressed()
+            original_x, original_y = self.player.x, self.player.y
             self.player.move(keys)
             self.player.update()
 
+            for rock in self.rocks:
+                if self.check_collision_with_obstacles(self.player, rock.rect.x, rock.rect.y, rock.rect.width, rock.rect.height):
+                    self.player.x, self.player.y = original_x, original_y  # Revert position if collision occurs
+
+            for tree in self.trees:
+                if self.check_collision_with_obstacles(self.player, tree.rect.x, tree.rect.y, tree.rect.width, tree.rect.height):
+                    self.player.x, self.player.y = original_x, original_y
+        
             # Dibujar el fondo primero
             self.win.blit(self.background_img, (0, 0))
             # Dibujar las piedras
@@ -474,14 +483,14 @@ class Game:
             self.draw_score()
 
             # Dibujar la cuenta regresiva
-            countdown_text = f"Tiempo restante: {seconds_left} segundos"
+            countdown_text = f"Tiempo restante: {seconds_left // 60}:{seconds_left % 60:02d}"
             text_surface = font.render(countdown_text, True, (255, 255, 255))  # Texto blanco
-            self.win.blit(text_surface, (150, 150))  # Posición en la esquina superior izquierda
+            self.win.blit(text_surface, (self.win.get_width() - text_surface.get_width() - 10, 10))  # Position on the top right corner
 
             pygame.display.update()
 
     def detect_impact(self):
-        """Detecta los impactos de los proyectiles con las piedras y otros jugadores."""
+        """Detecta los impactos de los proyectiles con las piedras, árboles y otros jugadores."""
         s = socket.socket()
         message = None  # Inicializar la variable message
 
@@ -496,6 +505,15 @@ class Game:
 
             if hit_detected:
                 continue  # Skip checking other players if a rock collision is detected
+
+            for tree in self.trees:
+                if self.check_collision(projectile, tree.rect.x, tree.rect.y, tree.rect.width, tree.rect.height):
+                    self.projectiles.remove(projectile)
+                    hit_detected = True
+                    break  # Exit the loop after detecting a collision
+
+            if hit_detected:
+                continue  # Skip checking other players if a tree collision is detected
 
             for data in self.cli_datas:
                 if data != "0":
@@ -539,5 +557,13 @@ class Game:
                     projectile.y + projectile.size > y)
         return collision
             
-        
+    def check_collision_with_obstacles(self, obj, x, y, width, height):
+        """Check if an object collides with obstacles (rocks or trees)."""
+        return (
+            obj.x < x + width and
+            obj.x + obj.size > x and
+            obj.y < y + height and
+            obj.y + obj.size > y
+        )
+    
     pygame.quit()
