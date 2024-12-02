@@ -99,5 +99,17 @@ while True:
             scores[shooter_id] = 0
         scores[shooter_id] += 1
         c.send((f"score_update:{shooter_id}:{scores[shooter_id]}").encode('utf-8'))
+    elif spl[0] == "end_game":
+        # Reiniciar todas las variables del juego
+        cli_datas = [0]  # Reiniciar lista con el valor inicial
+        ready_players.clear()  # Vaciar el conjunto de jugadores listos
+        player_statuses.clear()  # Limpiar el estado de los jugadores
+        shooting_datas.clear()  # Limpiar los datos de disparos
+        scores.clear()  # Reiniciar los puntajes
+        game_started = False  # Marcar que el juego no ha iniciado
+        cli_data_next_count = 1  # Reiniciar el contador de ID
+        clients_acknowledged.clear()  # Vaciar los clientes que reconocieron los datos
+        c.send(scores.encode('utf-8'))  # Informar al cliente que el juego terminó
+
 
     c.close()

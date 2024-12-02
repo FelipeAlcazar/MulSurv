@@ -3,6 +3,7 @@ import pygame
 import socket
 import threading
 from src.models.rock import Rock
+from src.models.tree import Tree
 from src.models.projectile import Projectile
 from src.views.characterSelectionView import CharacterSelectionView
 from src.models.player import Player
@@ -39,6 +40,7 @@ class Game:
         self.projectiles = []
         # Inicializar las piedras con posiciones fijas
         self.rocks = []
+        self.trees = []
         rock_positions = [
             (250, 450), (600, 300), (850, 550), (900, 500),
             (410, 370), (730, 460), (1020, 250), (550, 600),
@@ -49,6 +51,17 @@ class Game:
             rock = Rock(screen_width, screen_height)
             rock.rect.x, rock.rect.y = pos
             self.rocks.append(rock)
+        
+        tree_positions = [
+            (100, 100), (200, 200), (300, 300), (400, 400),
+            (500, 500), (600, 600), (700, 700), (800, 800),
+            (900, 900), (1000, 1000)
+        ]
+        
+        for pos in tree_positions:
+            tree = Tree(screen_width, screen_height)
+            tree.rect.x, tree.rect.y = pos
+            self.trees.append(tree)
 
         # Crear jugador
         self.player = []
@@ -400,8 +413,26 @@ class Game:
         """Bucle principal del juego."""
         clock = pygame.time.Clock()
         run = True
+        
+        # Registrar el tiempo de inicio
+        start_time = pygame.time.get_ticks()
+        duration = 2 * 60 * 1000  # Duración de 2 minutos en milisegundos
+
+        # Fuente para la cuenta regresiva
+        font = pygame.font.Font(None, 36)  # Cambia el tamaño según lo necesites
+
         while run:
-            clock.tick(60)  # Limit frame rate to 60 FPS
+            clock.tick(60)  # Limitar la velocidad de fotogramas a 60 FPS
+            
+            # Calcular tiempo restante
+            elapsed_time = pygame.time.get_ticks() - start_time
+            remaining_time = max(0, duration - elapsed_time)  # Asegurarse de que no sea negativo
+            seconds_left = remaining_time // 1000  # Convertir a segundos
+
+            # Terminar el juego si el tiempo se acaba
+            if remaining_time == 0:
+                print("¡El tiempo ha terminado! El juego ha durado 2 minutos.")
+                run = False
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -417,6 +448,8 @@ class Game:
             # Dibujar las piedras
             for rock in self.rocks:
                 rock.draw(self.win)
+            for tree in self.trees:
+                tree.draw(self.win)
             self.shooting()
 
             self.draw_character_with_label(self.player.image, self.player.x, self.player.y, self.name)
@@ -439,6 +472,12 @@ class Game:
             # Detectar impactos de los proyectiles
             self.detect_impact()
             self.draw_score()
+
+            # Dibujar la cuenta regresiva
+            countdown_text = f"Tiempo restante: {seconds_left} segundos"
+            text_surface = font.render(countdown_text, True, (255, 255, 255))  # Texto blanco
+            self.win.blit(text_surface, (150, 150))  # Posición en la esquina superior izquierda
+
             pygame.display.update()
 
     def detect_impact(self):
