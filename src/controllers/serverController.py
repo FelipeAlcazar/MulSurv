@@ -1,4 +1,6 @@
 import socket
+import threading
+import time
 
 host = "localhost"
 port = 12345
@@ -8,6 +10,7 @@ ready_players = set()
 player_statuses = {}
 shooting_datas = []
 scores = {}
+usernames = {}  # Dictionary to store usernames
 game_started = False  # Flag to track if the game has started
 # Append zero because we look if id != 0
 cli_datas.append(0)
@@ -33,6 +36,20 @@ def re_message(cli_datas, shooting_datas):
     mesaj = mesaj[:-1]
     return mesaj
 
+def reset_game_variables():
+    time.sleep(3)
+    global cli_datas, ready_players, player_statuses, shooting_datas, scores, game_started, cli_data_next_count, clients_acknowledged, usernames
+    # Reiniciar todas las variables del juego
+    cli_datas = [0]  # Reiniciar lista con el valor inicial
+    ready_players.clear()  # Vaciar el conjunto de jugadores listos
+    player_statuses.clear()  # Limpiar el estado de los jugadores
+    shooting_datas.clear()  # Limpiar los datos de disparos
+    scores.clear()  # Reiniciar los puntajes
+    usernames.clear()  # Reiniciar los nombres de usuario
+    game_started = False  # Marcar que el juego no ha iniciado
+    cli_data_next_count = 1  # Reiniciar el contador de ID
+    clients_acknowledged.clear()  # Vaciar los clientes que reconocieron los datos
+    
 try:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print("socket created")
@@ -54,6 +71,7 @@ while True:
     if spl[0] == "join":
         mesaj = 'id:' + str(cli_data_next_count)
         player_statuses[spl[1]] = "not_ready"
+        usernames[cli_data_next_count] = spl[1]  # Store the username with the assigned ID
         cli_data_next_count += 1
         c.send(mesaj.encode('utf-8'))
         print(f"Assigned ID {cli_data_next_count - 1} to player {spl[1]}")
@@ -100,16 +118,14 @@ while True:
         scores[shooter_id] += 1
         c.send((f"score_update:{shooter_id}:{scores[shooter_id]}").encode('utf-8'))
     elif spl[0] == "end_game":
-        # Reiniciar todas las variables del juego
-        cli_datas = [0]  # Reiniciar lista con el valor inicial
-        ready_players.clear()  # Vaciar el conjunto de jugadores listos
-        player_statuses.clear()  # Limpiar el estado de los jugadores
-        shooting_datas.clear()  # Limpiar los datos de disparos
-        scores.clear()  # Reiniciar los puntajes
-        game_started = False  # Marcar que el juego no ha iniciado
-        cli_data_next_count = 1  # Reiniciar el contador de ID
-        clients_acknowledged.clear()  # Vaciar los clientes que reconocieron los datos
-        c.send(scores.encode('utf-8'))  # Informar al cliente que el juego terminó
-
+        # Convert scores dictionary to a string
+        scores_str = "end_game:" + ";".join([f"{usernames[player]},{score}" for player, score in scores.items()])
+        
+        # Send the scores string to the client
+        c.send(scores_str.encode('utf-8'))  # Informar al cliente que el juego terminó
+        
+        # Start a thread to reset the game variables after 1 second
+        reset_thread = threading.Thread(target=reset_game_variables)
+        reset_thread.start()
 
     c.close()

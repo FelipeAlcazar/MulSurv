@@ -9,6 +9,7 @@ from src.views.characterSelectionView import CharacterSelectionView
 from src.models.player import Player
 import math
 import random
+from src.views.multiplayerEndGameView import MultiplayerEndGameView
 
 class Game:
     def __init__(self, nickname):
@@ -64,7 +65,7 @@ class Game:
             self.trees.append(tree)
 
         # Crear jugador
-        self.player = []
+        self.player = None
         self.image_path = None
         self.select_character()
         self.send_join_request()
@@ -289,8 +290,20 @@ class Game:
                 self.player = Player(character_name=selected_character_name)
                 self.image_path = self.player.image_path
                 screen_width, screen_height = self.win.get_width(), self.win.get_height()
-                self.player.x = random.randint(0, screen_width - self.player.size)
-                self.player.y = random.randint(0, screen_height - self.player.size)
+                while True:
+                    self.player.x = random.randint(0, screen_width - self.player.size)
+                    self.player.y = random.randint(0, screen_height - self.player.size)
+                    collision = False
+                    for rock in self.rocks:
+                        if self.check_collision_with_obstacles(self.player, rock.rect.x, rock.rect.y, rock.rect.width, rock.rect.height):
+                            collision = True
+                            break
+                    for tree in self.trees:
+                        if self.check_collision_with_obstacles(self.player, tree.rect.x, tree.rect.y, tree.rect.width, tree.rect.height):
+                            collision = True
+                            break
+                    if not collision:
+                        break
                 break  # Salimos del bucle
             else:
                 self.running = False  # Si no selecciona nada, salimos del juego
@@ -416,7 +429,7 @@ class Game:
         
         # Registrar el tiempo de inicio
         start_time = pygame.time.get_ticks()
-        duration = 2 * 60 * 1000  # Duración de 2 minutos en milisegundos
+        duration = 10 * 1000
 
         # Fuente para la cuenta regresiva
         font = pygame.font.Font(None, 36)  # Cambia el tamaño según lo necesites
@@ -431,8 +444,27 @@ class Game:
 
             # Terminar el juego si el tiempo se acaba
             if remaining_time == 0:
-                print("¡El tiempo ha terminado! El juego ha durado 2 minutos.")
+                print("¡El tiempo ha terminado!")
                 run = False
+
+                # Request scores from the server
+                s = socket.socket()
+                try:
+                    s.connect((self.host, self.port))
+                    send_text = f"end_game:{self.name}"
+                    s.sendall(send_text.encode('utf-8'))
+                    response = s.recv(1024).decode('utf-8')
+                    s.close()
+                    if response.startswith("end_game"):
+                        scores_str = response.split(":")[1]
+                        scores = {}
+                        for item in scores_str.split(";"):
+                            if "," in item:
+                                player, score = item.split(",")
+                                scores[player] = int(score)
+                        MultiplayerEndGameView(self.win, scores).run()
+                except socket.error as msg:
+                    print(msg)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
