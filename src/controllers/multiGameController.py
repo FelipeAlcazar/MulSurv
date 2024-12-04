@@ -406,7 +406,7 @@ class Game:
         current_time = pygame.time.get_ticks()
         
         # Debug statement to check if the shot is being processed
-        print(f"Processing shot: {shot_key} at time {current_time}")
+        #print(f"Processing shot: {shot_key} at time {current_time}")
         
         if shot_key not in self.shots or current_time - self.shots[shot_key] > 500:
             # Calculate angle between shooter and target position
