@@ -75,7 +75,7 @@ class GameView:
             self.screen.blit(upgrade_image, image_rect)
 
             # Dibujar el texto de mejora debajo de la imagen
-            text_rect = text.get_rect(center=(image_rect.centerx, image_rect.bottom + int(30 * self.scale_factor)))  # Posición ajustada del texto
+            text_rect = text.get_rect(center=(image_rect.centerx, image_rect.bottom + int(80 * self.scale_factor)))  # Posición ajustada del texto
             self.screen.blit(text, text_rect)
 
             if i == selected_option:
