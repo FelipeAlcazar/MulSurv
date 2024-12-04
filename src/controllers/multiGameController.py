@@ -446,7 +446,7 @@ class Game:
         
         # Registrar el tiempo de inicio
         start_time = pygame.time.get_ticks()
-        duration = 10 * 1000
+        duration = 60 * 1000
 
         # Fuente para la cuenta regresiva
         font = pygame.font.Font(None, 36)  # Cambia el tamaño según lo necesites
