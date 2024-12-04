@@ -97,10 +97,85 @@ class MultiplayerView:
                 self.screen.blit(error_surface, (self.screen.get_width() // 2 - error_surface.get_width() // 2, input_rect.y + 70))
 
             pygame.display.update()
+    
+    def get_host_and_port(self):
+        """Pantalla para capturar el host y el puerto del servidor."""
+        host = ""
+        port = ""
+        input_rect_host = pygame.Rect((self.screen.get_width() - 400) // 2, (self.screen.get_height() - 200) // 2, 400, 50)
+        input_rect_port = pygame.Rect((self.screen.get_width() - 400) // 2, (self.screen.get_height() + 100) // 2, 400, 50)
+        color_active = (50, 50, 200)
+        color_inactive = (100, 100, 100)
+        color_host = color_active
+        color_port = color_inactive
+        active_host = True
+        active_port = False
+        error_message = ""
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if input_rect_host.collidepoint(event.pos):
+                        active_host = True
+                        active_port = False
+                    elif input_rect_port.collidepoint(event.pos):
+                        active_host = False
+                        active_port = True
+                    else:
+                        active_host = False
+                        active_port = False
+                    color_host = color_active if active_host else color_inactive
+                    color_port = color_active if active_port else color_inactive
+                elif event.type == pygame.KEYDOWN:
+                    if active_host:
+                        if event.key == pygame.K_RETURN:
+                            active_host = False
+                            active_port = True
+                            color_host = color_inactive
+                            color_port = color_active
+                        elif event.key == pygame.K_BACKSPACE:
+                            host = host[:-1]
+                        else:
+                            host += event.unicode
+                    elif active_port:
+                        if event.key == pygame.K_RETURN:
+                            if host.strip() == "" or port.strip() == "":
+                                error_message = "Host and port cannot be empty!"
+                            else:
+                                return host, port
+                        elif event.key == pygame.K_BACKSPACE:
+                            port = port[:-1]
+                        else:
+                            port += event.unicode
+
+            self.screen.fill((0, 0, 0))
+            self.screen.blit(self.background_image, (0, 0))
+
+            pygame.draw.rect(self.screen, color_host, input_rect_host, border_radius=10)
+            pygame.draw.rect(self.screen, color_port, input_rect_port, border_radius=10)
+
+            text_surface_host = self.font.render(host, True, (255, 255, 255))
+            self.screen.blit(text_surface_host, (input_rect_host.x + 10, input_rect_host.y + 10))
+
+            text_surface_port = self.font.render(port, True, (255, 255, 255))
+            self.screen.blit(text_surface_port, (input_rect_port.x + 10, input_rect_port.y + 10))
+
+            instructions_host = self.font.render("Enter server host:", True, (255, 255, 255))
+            self.screen.blit(instructions_host, instructions_host.get_rect(center=(self.screen.get_width() // 2, input_rect_host.y - 60)))
+
+            instructions_port = self.font.render("Enter server port:", True, (255, 255, 255))
+            self.screen.blit(instructions_port, instructions_port.get_rect(center=(self.screen.get_width() // 2, input_rect_port.y - 60)))
+
+            if error_message:
+                error_surface = self.font.render(error_message, True, (255, 0, 0))
+                self.screen.blit(error_surface, (self.screen.get_width() // 2 - error_surface.get_width() // 2, input_rect_port.y + 70))
+
+            pygame.display.update()
 
     def show_multiplayer_menu(self):
-        # Obtener nickname antes de mostrar el menú principal
-
         menu_options = ["Host", "Join"]
         option_rects = [self.host_button_rect, self.join_button_rect]
         selected_option = 0
@@ -120,17 +195,23 @@ class MultiplayerView:
                     elif event.key == pygame.K_DOWN:
                         selected_option = (selected_option + 1) % len(menu_options)
                     elif event.key == pygame.K_RETURN:
-                        if menu_options[selected_option] == "Host" or menu_options[selected_option] == "Join":
-                            nickname = self.get_nickname()
-                            game_controller = Game(nickname)
+                        nickname = self.get_nickname()
+                        host, port = self.get_host_and_port()
+                        if menu_options[selected_option] == "Host":
+                            game_controller = Game(nickname, host, int(port))
+                        elif menu_options[selected_option] == "Join":
+                            game_controller = Game(nickname, host, int(port), start_server=False)
                         return menu_options[selected_option]
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         for i, rect in enumerate(option_rects):
                             if rect.collidepoint(event.pos):
-                                if menu_options[i] == "Host" or menu_options[i] == "Join":
-                                    nickname = self.get_nickname()
-                                    game_controller = Game(nickname)
+                                nickname = self.get_nickname()
+                                host, port = self.get_host_and_port()
+                                if menu_options[i] == "Host":
+                                    game_controller = Game(nickname, host, int(port))
+                                elif menu_options[i] == "Join":
+                                    game_controller = Game(nickname, host, int(port), start_server=False)
                                 return menu_options[i]
 
             self.screen.fill((0, 0, 0))  # Dark background

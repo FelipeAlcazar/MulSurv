@@ -10,36 +10,49 @@ from src.models.player import Player
 import math
 import random
 from src.views.multiplayerEndGameView import MultiplayerEndGameView
+import subprocess
 
 class Game:
-    def __init__(self, nickname):
+    def __init__(self, nickname, ip, port, start_server=True):
         pygame.init()
+        
+        if start_server:
+            # Start the server
+            self.start_server(ip, port)
+        
+        # Rest of the initialization code...
+        pygame.init()
+        
+        # Start the server
+        self.start_server(ip, port)
+        
         # Obtener la resolución actual de la pantalla
         info = pygame.display.Info()
-        screen_width, screen_height = info.current_w, info.current_h        # Inicialización de la ventana del juego
+        screen_width, screen_height = info.current_w, info.current_h
+        
+        # Inicialización de la ventana del juego
         self.win = pygame.display.set_mode((screen_width, screen_height), pygame.RESIZABLE)
         pygame.display.set_caption("Multimedia Game")
 
         # Cargar imágenes
-        self.background_img = pygame.image.load("assets/images/background_game.png")  # Ruta a la imagen de fondo
+        self.background_img = pygame.image.load("assets/images/background_game.png")
         self.background_img = pygame.transform.scale(self.background_img, (screen_width, screen_height))
 
         # Configurar fuente para texto
-        self.font = pygame.font.Font(None, 24)  # Fuente predeterminada, tamaño 24
-        self.shots = {}  # Dictionary to keep track of shots
+        self.font = pygame.font.Font(None, 24)
+        self.shots = {}
 
         # Variables del jugador y la red
-        self.host = "localhost"
-        self.port = 12345
+        self.ip = ip
+        self.port = port
         self.name = nickname
         self.user_id = 0
         self.is_live = 1
         self.score = 0
         self.cli_datas = []
-        self.pointer_image = pygame.image.load('assets/images/pointer.png')  # Load pointer image
-        self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))  # Scale down pointer image
+        self.pointer_image = pygame.image.load('assets/images/pointer.png')
+        self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))
         self.projectiles = []
-        # Inicializar las piedras con posiciones fijas
         self.rocks = []
         self.trees = []
         rock_positions = [
@@ -80,6 +93,10 @@ class Game:
         # Bucle principal del juego
         self.run()
 
+    def start_server(self, ip, port):
+        """Start the server as a subprocess."""
+        subprocess.Popen(['python', 'src/controllers/serverController.py', '--host', ip, '--port', str(port)])
+    
     def wait_for_all_players(self):
         """Wait for all players to be ready before starting the game."""
         waiting = True
@@ -161,7 +178,7 @@ class Game:
             # Check for start game signal from the server
             s = socket.socket()
             try:
-                s.connect((self.host, self.port))
+                s.connect((self.ip, self.port))
                 s.sendall("check_start".encode('utf-8'))
                 response = s.recv(1024).decode("utf-8")
                 s.close()
@@ -179,7 +196,7 @@ class Game:
         """Send start game message to the server."""
         s = socket.socket()
         try:
-            s.connect((self.host, self.port))
+            s.connect((self.ip, self.port))
             send_text = "start_game"
             s.sendall(send_text.encode('utf-8'))
             s.close()
@@ -190,7 +207,7 @@ class Game:
         """Get the status of all players from the server."""
         s = socket.socket()
         try:
-            s.connect((self.host, self.port))
+            s.connect((self.ip, self.port))
             s.sendall("status_check".encode('utf-8'))
             response = s.recv(1024).decode("utf-8")
             s.close()
@@ -209,7 +226,7 @@ class Game:
         """Send ready status to the server."""
         s = socket.socket()
         try:
-            s.connect((self.host, self.port))
+            s.connect((self.ip, self.port))
             send_text = f"ready:{self.user_id}"
             s.sendall(send_text.encode('utf-8'))
             s.close()
@@ -220,7 +237,7 @@ class Game:
         """Send join request to the server."""
         s = socket.socket()
         try:
-            s.connect((self.host, self.port))
+            s.connect((self.ip, self.port))
             send_text = f"join:{self.name}"
             s.sendall(send_text.encode('utf-8'))
             response = s.recv(1024).decode("utf-8")
@@ -235,7 +252,7 @@ class Game:
         """Check if all players are ready."""
         s = socket.socket()
         try:
-            s.connect((self.host, self.port))
+            s.connect((self.ip, self.port))
             s.sendall("ready_check".encode('utf-8'))
             response = s.recv(1024).decode("utf-8")
             s.close()
@@ -248,7 +265,7 @@ class Game:
         """Función para enviar posición al servidor."""
         s = socket.socket()
         try:
-            s.connect((self.host, self.port)) 
+            s.connect((self.ip, self.port)) 
             send_text = f"pos:{self.name}:{self.player.x}:{self.player.y}:{self.player.image_path}:{self.user_id}"
             s.sendall(send_text.encode('utf-8'))
             yanit = s.recv(1024).decode("utf-8")
@@ -268,7 +285,7 @@ class Game:
         while True:
             s = socket.socket()
             try:
-                s.connect((self.host, self.port))
+                s.connect((self.ip, self.port))
                 s.sendall("check_start".encode('utf-8'))
                 response = s.recv(1024).decode("utf-8")
                 s.close()
@@ -313,7 +330,7 @@ class Game:
         """Function to send shooting coordinates to the server."""
         s = socket.socket()
         try:
-            s.connect((self.host, self.port))
+            s.connect((self.ip, self.port))
             send_text = f"shoot:{self.name}:{self.player.x}:{self.player.y}:{self.is_live}:{self.user_id}:{target_x}:{target_y}"
             s.sendall(send_text.encode('utf-8'))
             yanit = s.recv(1024).decode("utf-8")
@@ -450,7 +467,7 @@ class Game:
                 # Request scores from the server
                 s = socket.socket()
                 try:
-                    s.connect((self.host, self.port))
+                    s.connect((self.ip, self.port))
                     send_text = f"end_game:{self.name}"
                     s.sendall(send_text.encode('utf-8'))
                     response = s.recv(1024).decode('utf-8')
@@ -563,7 +580,7 @@ class Game:
 
         if message:  # Solo intentar enviar si hay un mensaje
             try:
-                s.connect((self.host, self.port))
+                s.connect((self.ip, self.port))
                 s.sendall(message.encode('utf-8'))
                 response = s.recv(1024).decode('utf-8')
                 if response.startswith("score_update:"):

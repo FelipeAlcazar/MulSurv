@@ -2,8 +2,16 @@ import socket
 import threading
 import time
 
-host = "localhost"
-port = 12345
+import argparse
+
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description='Start the game server.')
+parser.add_argument('--host', type=str, default='localhost', help='The IP address to bind the server to.')
+parser.add_argument('--port', type=int, default=12345, help='The port to bind the server to.')
+args = parser.parse_args()
+
+host = args.host
+port = args.port
 
 cli_datas = []
 ready_players = set()
