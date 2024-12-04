@@ -1,16 +1,16 @@
 {
     "scoreboard": [
         {
+            "initials": "PAR",
+            "score": 32
+        },
+        {
             "initials": "AJB",
             "score": 19
         },
         {
-            "initials": "HEE",
-            "score": 11
-        },
-        {
-            "initials": "SAS",
-            "score": 10
+            "initials": "AFJ",
+            "score": 15
         }
     ],
     "coins": 1214,
