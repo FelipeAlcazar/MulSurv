@@ -23,7 +23,12 @@ class MenuView:
         # Cargar la fuente de píxeles
         self.font = pygame.font.Font('assets/fonts/pixel.ttf', 26)
         self.menu_font = pygame.font.Font('assets/fonts/pixel.ttf', 60)
-
+        # Add these lines to the __init__ method
+        
+        self.menu_music = pygame.mixer.Sound('assets/sounds/mainMenuSong.mp3')
+        # Add these lines to the show_menu method
+        self.menu_music.play(loops=-1)
+        
         # Variables de ayuda
         self.help_active = False
 
@@ -31,42 +36,45 @@ class MenuView:
         info = pygame.display.Info()
         WIDTH, HEIGHT = info.current_w, info.current_h
 
-        # Definir las opciones del menú, incluyendo las esquinas
+        # Play menu music
+        self.menu_music.play(loops=-1)
+
+        # Define menu options, including corners
         menu_options = ["Play", "Multiplayer", "Shop", "Help", "Quit"]
         corner_options = ["Help", "Quit"]
         option_rects = []
         corner_rects = []
 
-        # Calcular el factor de escala basado en la altura de la pantalla
+        # Calculate scale factor based on screen height
         scale_factor = HEIGHT / 1080
 
-        # Ajustar el espaciado entre botones y su tamaño
+        # Adjust spacing between buttons and their size
         vertical_spacing = 150
         logo_spacing = 100
 
-        # Obtener el ancho máximo (basado en "Multiplayer")
+        # Get maximum button width (based on "Multiplayer")
         sample_text_surface = self.menu_font.render("Multiplayer", True, (255, 255, 255))
-        max_button_width = sample_text_surface.get_width() + 40  # Añadimos margen de 20 px a cada lado
+        max_button_width = sample_text_surface.get_width() + 40  # Add 20 px margin on each side
 
-        # Botones centrales
+        # Central buttons
         for i, option in enumerate(menu_options[:3]):
             text_surface = self.menu_font.render(option, True, (255, 255, 255))
             rect = text_surface.get_rect(center=(WIDTH // 2, int(HEIGHT // 2 + logo_spacing + i * vertical_spacing * scale_factor)))
-            # Ajustar el ancho del rectángulo para que coincida con el ancho máximo
+            # Adjust rect width to match maximum width
             rect.width = max_button_width
             option_rects.append(rect)
 
-        # Botón de ayuda (esquina superior derecha)
+        # Help button (top right corner)
         help_button_rect = pygame.Rect(WIDTH - 160, 20, 150, 50)
         corner_rects.append(help_button_rect)
 
-        # Botón de salir (esquina superior izquierda)
+        # Quit button (top left corner)
         quit_button_rect = pygame.Rect(10, 20, 150, 50)
         corner_rects.append(quit_button_rect)
 
-        # Variables de selección
+        # Selection variables
         selected_option = 0
-        selected_corner = None  # None: menú central, 0: esquina derecha (Help), 1: esquina izquierda (Quit)
+        selected_corner = None  # None: central menu, 0: right corner (Help), 1: left corner (Quit)
         waiting = True
 
         while waiting:
@@ -76,65 +84,68 @@ class MenuView:
                     exit()
                 elif event.type == pygame.KEYDOWN:
                     if selected_corner is None:
-                        # Navegación dentro del menú central
+                        # Navigation within central menu
                         if event.key == pygame.K_DOWN:
                             selected_option = (selected_option + 1) % len(option_rects)
                         elif event.key == pygame.K_UP:
                             selected_option = (selected_option - 1) % len(option_rects)
                         elif event.key == pygame.K_RIGHT:
-                            selected_corner = 0  # Seleccionar esquina derecha (Help)
+                            selected_corner = 0  # Select right corner (Help)
                         elif event.key == pygame.K_LEFT:
-                            selected_corner = 1  # Seleccionar esquina izquierda (Quit)
+                            selected_corner = 1  # Select left corner (Quit)
                     else:
-                        # Navegación desde una esquina
+                        # Navigation from a corner
                         if selected_corner == 0 and event.key == pygame.K_LEFT:
-                            selected_corner = None  # Volver al menú central desde Help
+                            selected_corner = None  # Return to central menu from Help
                         elif selected_corner == 1 and event.key == pygame.K_RIGHT:
-                            selected_corner = None  # Volver al menú central desde Quit
+                            selected_corner = None  # Return to central menu from Quit
                     if event.key == pygame.K_RETURN:
                         if selected_corner == 0:  # Help
-                            self.show_help_screen()  # Mostrar la pantalla de ayuda
+                            self.show_help_screen()  # Show help screen
                         elif selected_corner == 1:  # Quit
+                            self.menu_music.stop()
                             return "Quit"
                         elif selected_corner is None:
                             if selected_option == 0:  # Play
+                                self.menu_music.stop()
                                 return "Play"
                             elif selected_option == 1:  # Multiplayer
+                                self.menu_music.stop()
                                 multiplayer_view = MultiplayerView(self.screen)
                                 multiplayer_view.show_multiplayer_menu()
                             elif selected_option == 2:  # Shop
                                 shop_view = ShopView(self.screen)
                                 shop_view.run()
 
-            # Dibujar el fondo
+            # Draw background
             self.screen.fill((0, 0, 0))
             self.screen.blit(self.background_image, (0, 0))
 
-            # Dibujar el logo
+            # Draw logo
             logo_rect = self.logo_image.get_rect(center=(WIDTH // 2, int(HEIGHT // 4)))
             self.screen.blit(self.logo_image, logo_rect)
 
-            # Dibujar las opciones centrales
+            # Draw central options
             for i, option in enumerate(menu_options[:3]):
                 rect = option_rects[i]
                 if selected_corner is None and selected_option == i:
-                    color = (255, 255, 0)  # Amarillo
+                    color = (255, 255, 0)  # Yellow
                     bg_color = (50, 50, 50)
                 else:
-                    color = (255, 255, 255)  # Blanco
+                    color = (255, 255, 255)  # White
                     bg_color = (30, 30, 30)
                 bg_rect = pygame.Rect(WIDTH // 2 - max_button_width // 2, rect.y - 10, max_button_width, rect.height + 20)
                 self.draw_rounded_rect(self.screen, bg_color, bg_rect, 15)
                 text_surface = self.menu_font.render(option, True, color)
                 self.screen.blit(text_surface, rect)
 
-            # Dibujar los botones en las esquinas
+            # Draw corner buttons
             for i, rect in enumerate(corner_rects):
                 if selected_corner == i:
-                    color = (255, 255, 0)  # Amarillo
+                    color = (255, 255, 0)  # Yellow
                     bg_color = (50, 50, 50)
                 else:
-                    color = (255, 255, 255)  # Blanco
+                    color = (255, 255, 255)  # White
                     bg_color = (30, 30, 30)
                 self.draw_rounded_rect(self.screen, bg_color, rect, 15)
                 text_surface = self.font.render(corner_options[i], True, color)
