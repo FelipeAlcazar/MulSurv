@@ -60,6 +60,8 @@ def reset_game_variables():
     
 try:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
     print("socket created")
 
     s.bind((host, port))
@@ -106,11 +108,11 @@ while True:
             shooting_datas.clear()
             clients_acknowledged.clear()
     elif spl[0] == "shoot":
-        print(f"Shooting coordinates received: {spl[1:]}")
+        #print(f"Shooting coordinates received: {spl[1:]}")
         shooting_datas.append(userdata)
         c.send(re_message(cli_datas, shooting_datas).encode('utf-8'))
     elif spl[0] == "start_game":
-        print("Start game signal received")
+        #print("Start game signal received")
         game_started = True  # Set the game started flag
     elif spl[0] == "check_start":
         if game_started:
@@ -119,7 +121,7 @@ while True:
             c.send("not_ready".encode('utf-8'))
     elif spl[0] == "hit":
         shooter_id = int(spl[1])
-        print(f"Player {shooter_id} hit another player")
+        #print(f"Player {shooter_id} hit another player")
         # Incrementa el puntaje del jugador que disparó
         if shooter_id not in scores:
             scores[shooter_id] = 0
