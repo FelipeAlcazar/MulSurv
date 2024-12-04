@@ -72,10 +72,14 @@ class MultiplayerView:
                                 error_message = "Nickname cannot be empty!"  # Mensaje de error
                             else:
                                 return nickname  # Devuelve el nickname al presionar Enter
+                        elif event.key == pygame.K_ESCAPE:
+                            return "BACK"
                         elif event.key == pygame.K_BACKSPACE:
                             nickname = nickname[:-1]
                         else:
                             nickname += event.unicode
+                    elif event.key == pygame.K_ESCAPE:
+                        return "BACK"
 
             self.screen.fill((0, 0, 0))  # Fondo oscuro
             self.screen.blit(self.background_image, (0, 0))
@@ -97,7 +101,7 @@ class MultiplayerView:
                 self.screen.blit(error_surface, (self.screen.get_width() // 2 - error_surface.get_width() // 2, input_rect.y + 70))
 
             pygame.display.update()
-    
+
     def get_host_and_port(self):
         """Pantalla para capturar el host y el puerto del servidor."""
         host = ""
@@ -136,6 +140,8 @@ class MultiplayerView:
                             active_port = True
                             color_host = color_inactive
                             color_port = color_active
+                        elif event.key == pygame.K_ESCAPE:
+                            return "BACK", "BACK"
                         elif event.key == pygame.K_BACKSPACE:
                             host = host[:-1]
                         else:
@@ -146,10 +152,14 @@ class MultiplayerView:
                                 error_message = "Host and port cannot be empty!"
                             else:
                                 return host, port
+                        elif event.key == pygame.K_ESCAPE:
+                            return "BACK", "BACK"
                         elif event.key == pygame.K_BACKSPACE:
                             port = port[:-1]
                         else:
                             port += event.unicode
+                    elif event.key == pygame.K_ESCAPE:
+                        return "BACK", "BACK"
 
             self.screen.fill((0, 0, 0))
             self.screen.blit(self.background_image, (0, 0))
@@ -196,7 +206,11 @@ class MultiplayerView:
                         selected_option = (selected_option + 1) % len(menu_options)
                     elif event.key == pygame.K_RETURN:
                         nickname = self.get_nickname()
+                        if nickname == "BACK":
+                            continue
                         host, port = self.get_host_and_port()
+                        if host == "BACK" and port == "BACK":
+                            continue
                         if menu_options[selected_option] == "Host":
                             game_controller = Game(nickname, host, int(port))
                         elif menu_options[selected_option] == "Join":
@@ -207,7 +221,11 @@ class MultiplayerView:
                         for i, rect in enumerate(option_rects):
                             if rect.collidepoint(event.pos):
                                 nickname = self.get_nickname()
+                                if nickname == "BACK":
+                                    continue
                                 host, port = self.get_host_and_port()
+                                if host == "BACK" and port == "BACK":
+                                    continue
                                 if menu_options[i] == "Host":
                                     game_controller = Game(nickname, host, int(port))
                                 elif menu_options[i] == "Join":
