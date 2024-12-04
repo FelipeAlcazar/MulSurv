@@ -422,7 +422,7 @@ class Game:
             projectile = Projectile(shooter_x + self.player.size // 2, shooter_y + self.player.size // 2, direction_x * 10, direction_y * 10)
             
             # Debug print statement to check the number of projectiles
-            print(f"Adding projectile at ({projectile.x}, {projectile.y}) with direction ({projectile.dx}, {projectile.dy})")
+            #print(f"Adding projectile at ({projectile.x}, {projectile.y}) with direction ({projectile.dx}, {projectile.dy})")
             
             # Ensure only one projectile is added
             self.projectiles.append(projectile)
@@ -431,7 +431,7 @@ class Game:
         # Remove old shots after half a second to prevent memory overflow
         self.shots = {key: time for key, time in self.shots.items() if current_time - time < 1000}
         # Debug statement to check the current shots dictionary
-        print(f"Current shots: {self.shots}")
+        #print(f"Current shots: {self.shots}")
 
     def draw_score(self):
         """Muestra el puntaje del jugador en la pantalla."""
