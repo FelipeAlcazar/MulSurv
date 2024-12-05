@@ -1,6 +1,7 @@
 import pygame
 from src.views.shopView import ShopView  # Import the ShopView class
 from src.views.multiplayerView import MultiplayerView  # Import the MultiplayerView class
+from src.views.developersView import DevelopersView  # Import the DevelopersView class
 
 class MenuView:
     def __init__(self, screen):
@@ -39,9 +40,9 @@ class MenuView:
         # Play menu music
         self.menu_music.play(loops=-1)
 
-        # Define menu options, including corners
+        # Define menu options
         menu_options = ["Play", "Multiplayer", "Shop", "Help", "Quit"]
-        corner_options = ["Help", "Quit"]
+        corner_options = ["Help", "Quit", "Developers"]
         option_rects = []
         corner_rects = []
 
@@ -60,21 +61,19 @@ class MenuView:
         for i, option in enumerate(menu_options[:3]):
             text_surface = self.menu_font.render(option, True, (255, 255, 255))
             rect = text_surface.get_rect(center=(WIDTH // 2, int(HEIGHT // 2 + logo_spacing + i * vertical_spacing * scale_factor)))
-            # Adjust rect width to match maximum width
             rect.width = max_button_width
             option_rects.append(rect)
 
-        # Help button (top right corner)
+        # Corner buttons
         help_button_rect = pygame.Rect(WIDTH - 160, 20, 150, 50)
-        corner_rects.append(help_button_rect)
-
-        # Quit button (top left corner)
         quit_button_rect = pygame.Rect(10, 20, 150, 50)
-        corner_rects.append(quit_button_rect)
+        developers_button_rect = pygame.Rect(WIDTH - 210, HEIGHT - 70, 200, 50)  # Bottom right corner
+
+        corner_rects.extend([help_button_rect, quit_button_rect, developers_button_rect])
 
         # Selection variables
         selected_option = 0
-        selected_corner = None  # None: central menu, 0: right corner (Help), 1: left corner (Quit)
+        selected_corner = None  # None: central menu, 0: Help, 1: Quit, 2: Developers
         waiting = True
 
         while waiting:
@@ -90,21 +89,32 @@ class MenuView:
                         elif event.key == pygame.K_UP:
                             selected_option = (selected_option - 1) % len(option_rects)
                         elif event.key == pygame.K_RIGHT:
-                            selected_corner = 0  # Select right corner (Help)
+                            selected_corner = 0  # Select Help
                         elif event.key == pygame.K_LEFT:
-                            selected_corner = 1  # Select left corner (Quit)
+                            selected_corner = 1  # Select Quit
+                        elif event.key == pygame.K_DOWN:  # Navigate to Developers from Quit
+                            selected_corner = 2  # Developers
+                    elif selected_corner == 0:  # If in Quit button (left corner)
+                        if event.key == pygame.K_DOWN:  # Move down to Developers
+                            selected_corner = 2  # Developers corner
                     else:
                         # Navigation from a corner
                         if selected_corner == 0 and event.key == pygame.K_LEFT:
                             selected_corner = None  # Return to central menu from Help
                         elif selected_corner == 1 and event.key == pygame.K_RIGHT:
                             selected_corner = None  # Return to central menu from Quit
+                        elif selected_corner == 2 and (event.key == pygame.K_UP or event.key == pygame.K_LEFT):
+                            selected_corner = None  # Return to central menu from Developers
                     if event.key == pygame.K_RETURN:
                         if selected_corner == 0:  # Help
-                            self.show_help_screen()  # Show help screen
+                            self.show_help_screen()
                         elif selected_corner == 1:  # Quit
                             self.menu_music.stop()
                             return "Quit"
+                        elif selected_corner == 2:  # Developers
+                            self.menu_music.stop()
+                            developers_view = DevelopersView(self.screen)
+                            developers_view.run()
                         elif selected_corner is None:
                             if selected_option == 0:  # Play
                                 self.menu_music.stop()
@@ -125,7 +135,7 @@ class MenuView:
             logo_rect = self.logo_image.get_rect(center=(WIDTH // 2, int(HEIGHT // 4)))
             self.screen.blit(self.logo_image, logo_rect)
 
-            # Draw central options
+            # Draw central buttons
             for i, option in enumerate(menu_options[:3]):
                 rect = option_rects[i]
                 if selected_corner is None and selected_option == i:
@@ -152,6 +162,8 @@ class MenuView:
                 self.screen.blit(text_surface, rect.move(50, 10))
 
             pygame.display.update()
+
+
 
     def draw_rounded_rect(self, surface, color, rect, radius):
         pygame.draw.rect(surface, color, rect, border_radius=radius)
