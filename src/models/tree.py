@@ -1,10 +1,15 @@
+import os
 import pygame
 import random
 
 class Tree:
     def __init__(self, screen_width, screen_height):
-        # Load images for different rock states
-        self.image = pygame.image.load('assets/images/tree.png')
+        # Base path for assets
+        base_path = os.path.dirname(__file__)
+        assets_path = os.path.join(base_path, "..", "..", "assets")
+
+        # Load images for different tree states
+        self.image = pygame.image.load(os.path.join(assets_path, "images", "tree.png"))
         self.state = 0  # Initial state
         self.rect = self.image.get_rect()
 
@@ -17,8 +22,8 @@ class Tree:
         self.y = self.rect.y
         self.width = self.rect.width
         self.height = self.rect.height
-        self.size = self.rect.width  # Assuming the rock is square
+        self.size = self.rect.width  # Assuming the tree is square
 
     def draw(self, screen):
-        # Draw the rock on the screen
+        # Draw the tree on the screen
         screen.blit(self.image, self.rect)

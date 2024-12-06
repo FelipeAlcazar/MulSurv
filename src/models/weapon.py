@@ -1,8 +1,16 @@
+import os
 import pygame
 
 class Weapon:
+    base_path = os.path.dirname(__file__)
+    assets_path = os.path.join(base_path, "..", "..", "assets")
+
     predefined_weapons = {
-        "Gun": {"sound_path": 'assets/sounds/gunShot.mp3', "shoot_delay": 1000, "volume": 0.6}
+        "Gun": {
+            "sound_path": os.path.join(assets_path, "sounds", "gunShot.mp3"),
+            "shoot_delay": 1000,
+            "volume": 0.6
+        }
     }
 
     def __init__(self, name, sound_path=None, shoot_delay=None, volume=1.0):

@@ -1,3 +1,4 @@
+import os
 import time
 import pygame
 import socket
@@ -35,7 +36,9 @@ class Game:
         pygame.display.set_caption("Multimedia Game")
 
         # Cargar imágenes
-        self.background_img = pygame.image.load("assets/images/background_game.png")
+        base_path = os.path.dirname(__file__)
+        assets_path = os.path.join(base_path, "..", "..", "assets")
+        self.background_img = pygame.image.load(os.path.join(assets_path, "images", "background_game.png"))
         self.background_img = pygame.transform.scale(self.background_img, (screen_width, screen_height))
 
         # Configurar fuente para texto
@@ -50,7 +53,7 @@ class Game:
         self.is_live = 1
         self.score = 0
         self.cli_datas = []
-        self.pointer_image = pygame.image.load('assets/images/pointer.png')
+        self.pointer_image = pygame.image.load(os.path.join(assets_path, "images", "pointer.png"))
         self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))
         self.projectiles = []
         self.rocks = []
@@ -95,7 +98,9 @@ class Game:
 
     def start_server(self, ip, port):
         """Start the server as a subprocess."""
-        subprocess.Popen(['python', 'src/controllers/serverController.py', '--host', ip, '--port', str(port)])
+        base_path = os.path.dirname(__file__)
+        server_path = os.path.join(base_path, 'serverController.py')
+        subprocess.Popen(['python', server_path, '--host', ip, '--port', str(port)])
     
     def wait_for_all_players(self):
         """Wait for all players to be ready before starting the game."""
@@ -117,8 +122,11 @@ class Game:
         ready_button_color = (70, 70, 70)
         ready_button_hover_color = (90, 90, 90)
         ready_button_text_color = (255, 255, 255)
-        ready_button_font = pygame.font.Font('assets/fonts/pixel.ttf', 36)
-
+        
+        base_path = os.path.dirname(__file__)
+        assets_path = os.path.join(base_path, "..", "..", "assets")
+        ready_button_font = pygame.font.Font(os.path.join(assets_path, "fonts", "pixel.ttf"), 36) 
+        
         while waiting:
             mouse_pos = pygame.mouse.get_pos()
             for event in pygame.event.get():

@@ -1,3 +1,4 @@
+import os
 import pygame
 from src.views.shopView import ShopView  # Import the ShopView class
 from src.views.multiplayerView import MultiplayerView  # Import the MultiplayerView class
@@ -9,12 +10,16 @@ class MenuView:
         pygame.init()
         info = pygame.display.Info()
 
+        # Base path for assets
+        base_path = os.path.dirname(__file__)
+        assets_path = os.path.join(base_path, "..", "..", "assets")
+
         # Cargar la imagen de fondo
-        self.background_image = pygame.image.load('assets/images/background.png')
+        self.background_image = pygame.image.load(os.path.join(assets_path, 'images', 'background.png'))
         self.background_image = pygame.transform.scale(self.background_image, (self.screen.get_width(), self.screen.get_height()))
 
         # Cargar la imagen del logo y reducir su tamaño
-        self.logo_image = pygame.image.load('assets/images/logo.png')
+        self.logo_image = pygame.image.load(os.path.join(assets_path, 'images', 'logo.png'))
         logo_width, logo_height = self.logo_image.get_size()
         logo_scale_factor = 0.4
         new_logo_width = int(logo_width * logo_scale_factor)
@@ -22,12 +27,10 @@ class MenuView:
         self.logo_image = pygame.transform.scale(self.logo_image, (new_logo_width, new_logo_height))
 
         # Cargar la fuente de píxeles
-        self.font = pygame.font.Font('assets/fonts/pixel.ttf', 26)
-        self.menu_font = pygame.font.Font('assets/fonts/pixel.ttf', 60)
-        # Add these lines to the __init__ method
+        self.font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 26)
+        self.menu_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 60)
         
-        self.menu_music = pygame.mixer.Sound('assets/sounds/mainMenuSong.mp3')
-        # Add these lines to the show_menu method
+        self.menu_music = pygame.mixer.Sound(os.path.join(assets_path, 'sounds', 'mainMenuSong.mp3'))
         self.menu_music.play(loops=-1)
         
         # Variables de ayuda
@@ -163,8 +166,6 @@ class MenuView:
 
             pygame.display.update()
 
-
-
     def draw_rounded_rect(self, surface, color, rect, radius):
         pygame.draw.rect(surface, color, rect, border_radius=radius)
 
@@ -203,8 +204,3 @@ class MenuView:
                 y_offset += 50
 
             pygame.display.update()
-
-
-
-
-

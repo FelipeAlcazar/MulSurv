@@ -1,3 +1,4 @@
+import os
 import pygame
 import time
 
@@ -5,8 +6,13 @@ class MultiplayerEndGameView:
     def __init__(self, win, scores):
         self.win = win
         self.scores = scores
-        self.font = pygame.font.Font(None, 36)  # Base font size
-        self.title_font = pygame.font.Font(None, 48)  # Font for the title
+
+        # Base path for assets
+        base_path = os.path.dirname(__file__)
+        self.assets_path = os.path.join(base_path, "..", "..", "assets")
+
+        self.font = pygame.font.Font(os.path.join(self.assets_path, "fonts", "pixel.ttf"), 36)  # Base font size
+        self.title_font = pygame.font.Font(os.path.join(self.assets_path, "fonts", "pixel.ttf"), 48)  # Font for the title
         self.blink = True
         self.last_blink_time = time.time()
 
@@ -32,7 +38,7 @@ class MultiplayerEndGameView:
             for place, (player, score) in enumerate(sorted_scores, start=1):
                 # Adjust font size based on place
                 font_size = 48 - (place - 1) * 4  # Winner has the largest font, others decrease in size
-                dynamic_font = pygame.font.Font(None, font_size)
+                dynamic_font = pygame.font.Font(os.path.join(self.assets_path, "fonts", "pixel.ttf"), font_size)
                 score_text = dynamic_font.render(f"{place}. {player}: {score}", True, (255, 255, 255))
                 self.win.blit(score_text, (self.win.get_width() // 2 - score_text.get_width() // 2, y_offset))
                 

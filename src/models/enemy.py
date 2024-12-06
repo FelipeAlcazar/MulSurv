@@ -1,39 +1,43 @@
+import os
 import pygame
 import random
 import math
 
 class Enemy:
+    base_path = os.path.dirname(__file__)
+    assets_path = os.path.join(base_path, "..", "..", "assets")
+
     predefined_enemies = {
         "DefaultEnemy": {
-            "image_path": 'assets/images/floppy_disk_enemy.png',
+            "image_path": os.path.join(assets_path, "images", "floppy_disk_enemy.png"),
             "size": 50,
             "image_size": 50,
             "speed": 2,
             "health": 1
         },
         "CameraEnemy": {
-            "image_path": 'assets/images/camera_enemy.png',
+            "image_path": os.path.join(assets_path, "images", "camera_enemy.png"),
             "size": 30,
             "image_size": 30,
             "speed": 3,
             "health": 2
         },
         "ControllerEnemy": {
-            "image_path": 'assets/images/controller_enemy.png',
+            "image_path": os.path.join(assets_path, "images", "controller_enemy.png"),
             "size": 70,
             "image_size": 70,
             "speed": 4,
             "health": 3
         },
         "HeadphoneEnemy": {
-            "image_path": 'assets/images/headphones.png',
+            "image_path": os.path.join(assets_path, "images", "headphones.png"),
             "size": 50,
             "image_size": 50,
             "speed": 5,
             "health": 4
         },
         "MouseEnemy": {
-            "image_path": 'assets/images/mouse.png',
+            "image_path": os.path.join(assets_path, "images", "mouse.png"),
             "size": 80,
             "image_size": 80,
             "speed": 6,
@@ -57,7 +61,7 @@ class Enemy:
             self.speed = 2
             self.original_speed = self.speed
             self.health = 1
-            self.image = pygame.image.load('assets/images/enemy_image.png')
+            self.image = pygame.image.load(os.path.join(self.assets_path, "images", "enemy_image.png"))
             self.image = pygame.transform.scale(self.image, (self.image_size, self.image_size))
         
         self.x = x

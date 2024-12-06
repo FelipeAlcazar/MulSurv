@@ -1,3 +1,4 @@
+import os
 import pygame
 from src.models.player import Player
 from src.models.enemy import HeadphoneEnemy, MouseEnemy, SpecificEnemy, CameraEnemy, ControllerEnemy
@@ -27,12 +28,15 @@ class GameController:
 
     def reset_game(self):
         pygame.mouse.set_visible(False)
+        base_path = os.path.dirname(__file__)
+        assets_path = os.path.join(base_path, "..", "..", "assets")
+        
         self.clock = pygame.time.Clock()
         self.game_view = GameView(self.screen)
         self.scoremanager = ScoreManager(self.screen)
         self.spawn_delay = 2000  # Milisegundos, cambiará con la dificultad
         self.spawner = Spawner(self.screen.get_width(), self.screen.get_height(), self.spawn_delay)
-        self.arrow_image = pygame.image.load('assets/images/arrow.png')  # Load arrow image once
+        self.arrow_image = pygame.image.load(os.path.join(assets_path, 'images', 'arrow.png'))
         self.player = None
         self.enemies = []
         self.projectiles = []
@@ -49,17 +53,17 @@ class GameController:
         self.options = []
         self.top_scores = None
         self.selected_option = 0
-        self.pointer_image = pygame.image.load('assets/images/pointer.png')  # Load pointer image
-        self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))  # Scale down pointer image
+        self.pointer_image = pygame.image.load(os.path.join(assets_path, 'images', 'pointer.png'))
+        self.pointer_image = pygame.transform.scale(self.pointer_image, (20, 20))
         self.enemy_switch_interval = 30000  # 30 seconds in milliseconds
         self.controller_enemy_interval = 60000  # 60 seconds in milliseconds
         self.paused = False
         self.chosen_upgrades = {}
-        self.pause_font = pygame.font.Font('assets/fonts/pixel.ttf', 74)
-        self.options_font = pygame.font.Font('assets/fonts/pixel.ttf', 48)
+        self.pause_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 74)
+        self.options_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 48)
         
         # Cargar imagen de fondo
-        self.background_image = pygame.image.load('assets/images/background_game.png').convert()
+        self.background_image = pygame.image.load(os.path.join(assets_path, 'images', 'background_game.png')).convert()
         self.background_image = pygame.transform.scale(self.background_image, (self.screen.get_width(), self.screen.get_height()))
 
         # Preload upgrade images
@@ -68,7 +72,6 @@ class GameController:
     def init_display(self):
         # Configuración inicial sin volver a crear la pantalla
         pygame.display.set_caption("Multimedia Game")
-
 
     def select_character(self):
         """Muestra la pantalla de selección de personaje y asigna el personaje seleccionado."""
@@ -84,12 +87,10 @@ class GameController:
                 self.running = False  # Si no selecciona nada, salimos del juego
                 return
 
-
     def show_shop(self):
         """Muestra la pantalla de la tienda."""
         shop_view = ShopView(self.screen)  # Usamos la misma pantalla
         shop_view.run()
-
 
     def run(self):
         while True:
@@ -148,19 +149,31 @@ class GameController:
         """Finaliza el juego, muestra pantalla de Game Over con animación y texto, añade monedas ganadas y actualiza el scoreboard si es necesario."""
         self.coins += self.score
 
+        # Add coins earned to the game data
+        self.game_data["coins"] = self.coins
+
+        # Save the score earned to the game data
+        self.game_data["score_earned"] = self.score
+
+        # Save the updated game data
+        save_data(self.game_data)
+
         # Actualizar el scoreboard
         self.scoremanager.update_scoreboard(self.score)
 
+        base_path = os.path.dirname(__file__)
+        assets_path = os.path.join(base_path, "..", "..", "assets")
+        
         # Cargar y mostrar la pantalla de Game Over
-        gif_path = "assets/images/perder.gif"
+        gif_path = os.path.join(assets_path, "images", "perder.gif")
         gif_frames = self.scoremanager.load_gif_frames(gif_path)
 
         # Cargar la imagen de fondo
-        background_path = "assets/images/background.png"
+        background_path = os.path.join(assets_path, "images", "background.png")
         background = self.scoremanager.load_background_image(background_path)
 
         # Cargar la imagen de Game Over
-        game_over_image_path = "assets/images/gameover.png"
+        game_over_image_path = os.path.join(assets_path, "images", "gameover.png")
         game_over_image = pygame.image.load(game_over_image_path)
         game_over_image = pygame.transform.scale(game_over_image, (500, 400))
         game_over_rect = game_over_image.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 4))

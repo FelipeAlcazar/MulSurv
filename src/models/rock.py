@@ -1,19 +1,24 @@
+import os
 import pygame
 import random
 
 class Rock:
     def __init__(self, screen_width, screen_height):
+        # Base path for assets
+        base_path = os.path.dirname(__file__)
+        assets_path = os.path.join(base_path, "..", "..", "assets")
+
         # Load images for different rock states
         self.images = [
-            pygame.image.load('assets/images/rock1.png'),
-            pygame.image.load('assets/images/rock2.png')
+            pygame.image.load(os.path.join(assets_path, "images", "rock1.png")),
+            pygame.image.load(os.path.join(assets_path, "images", "rock2.png"))
         ]
         self.state = 0  # Initial state
         self.image = self.images[self.state]
         self.rect = self.image.get_rect()
 
         # Load a single hit sound
-        self.hit_sound = pygame.mixer.Sound('assets/sounds/rockHit.wav')
+        self.hit_sound = pygame.mixer.Sound(os.path.join(assets_path, "sounds", "rockHit.wav"))
 
         # Random position within screen bounds
         self.rect.x = random.randint(0, screen_width - self.rect.width)

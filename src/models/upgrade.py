@@ -1,3 +1,4 @@
+import os
 from src.models.weapon import Weapon
 
 class Upgrade:
@@ -29,12 +30,17 @@ def double_shoot(player):
 def triple_shoot(player):
     player.triple_shoot = True
 
+# Base path for assets
+base_path = os.path.dirname(__file__)
+assets_path = os.path.join(base_path, "..", "..", "assets")
+
 # Define available upgrades
-image_path = 'assets/images/heart_upgrade.png'
-speed_image_path = 'assets/images/speed_upgrade.png'
-firerate_image_path = 'assets/images/firerate_upgrade.png'
-doubleShoot_image_path = 'assets/images/doubleShoot_upgrade.png'
-tripleShoot_image_path = 'assets/images/tripleShoot_upgrade.png'
+image_path = os.path.join(assets_path, 'images', 'heart_upgrade.png')
+speed_image_path = os.path.join(assets_path, 'images', 'speed_upgrade.png')
+firerate_image_path = os.path.join(assets_path, 'images', 'firerate_upgrade.png')
+doubleShoot_image_path = os.path.join(assets_path, 'images', 'doubleShoot_upgrade.png')
+tripleShoot_image_path = os.path.join(assets_path, 'images', 'tripleShoot_upgrade.png')
+
 available_upgrades = [
     Upgrade("Increase Fire Rate", "Decreases the time between shots.", increase_fire_rate, firerate_image_path),
     Upgrade("Increase Speed", "Increases the player's speed.", increase_speed, speed_image_path),

@@ -1,8 +1,12 @@
+import os
 import pygame
 
 class ExperiencePoint:
     # Class variable to hold the loaded and scaled image
-    image = pygame.transform.scale(pygame.image.load('assets/images/experience_point.png'), (30, 30))
+    base_path = os.path.dirname(__file__)
+    assets_path = os.path.join(base_path, "..", "..", "assets")
+    image_path = os.path.join(assets_path, "images", "experience_point.png")
+    image = pygame.transform.scale(pygame.image.load(image_path), (30, 30))
 
     def __init__(self, x, y, value, spawn_time):
         self.x = x

@@ -8,17 +8,21 @@ class ShopView:
         self.screen = screen
         self.clock = pygame.time.Clock()
         
+        # Base path for assets
+        base_path = os.path.dirname(__file__)
+        assets_path = os.path.join(base_path, "..", "..", "assets")
+
         # Cargar datos de monedas y personajes desbloqueados
         self.data = load_data()
         self.coins = self.data.get("coins", 0)
         self.unlocked_characters = self.data.get("unlocked_characters", [])
 
         # Cargar imagen de la moneda y aumentar su tamaño
-        self.coin_image = pygame.image.load("assets/images/coin.png").convert_alpha()
+        self.coin_image = pygame.image.load(os.path.join(assets_path, "images", "coin.png")).convert_alpha()
         self.coin_image = pygame.transform.scale(self.coin_image, (48, 48))
         
         # Cargar imagen de candado
-        self.locked_image = pygame.image.load("assets/images/lock.png").convert_alpha()
+        self.locked_image = pygame.image.load(os.path.join(assets_path, "images", "lock.png")).convert_alpha()
         self.locked_image = pygame.transform.scale(self.locked_image, (32, 32))
 
         # Colores
@@ -46,11 +50,11 @@ class ShopView:
         )
         
         # Load the pixel font
-        self.font = pygame.font.Font('assets/fonts/pixel.ttf', 36)
-        self.title_font = pygame.font.Font('assets/fonts/pixel.ttf', 48)
-        self.name_font = pygame.font.Font('assets/fonts/pixel.ttf', 24)
-        self.unlock_font = pygame.font.Font('assets/fonts/pixel.ttf', 20)
-        self.button_font = pygame.font.Font('assets/fonts/pixel.ttf', 24)
+        self.font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 36)
+        self.title_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 48)
+        self.name_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 24)
+        self.unlock_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 20)
+        self.button_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 24)
 
     def draw_coins(self):
         # Obtener el ancho de la pantalla

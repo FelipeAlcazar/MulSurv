@@ -1,3 +1,4 @@
+import os
 import pygame
 from src.models.character import Character
 from src.models.projectile import Projectile
@@ -5,27 +6,30 @@ from src.models.weapon import Weapon
 import math
 
 class Player(Character):
+    base_path = os.path.dirname(__file__)
+    assets_path = os.path.join(base_path, "..", "..", "assets")
+
     predefined_characters = {
         "DefaultPlayer": {
-            "image_path": 'assets/images/default_character.png',
+            "image_path": os.path.join(assets_path, "images", "default_character.png"),
             "weapon_name": "Gun",
             "size": 50,
             "speed": 5
         },
         "Mario": {
-            "image_path": 'assets/images/second_character.png',
+            "image_path": os.path.join(assets_path, "images", "second_character.png"),
             "weapon_name": "Gun",
             "size": 50,
             "speed": 7
         },
         "Miau Miau": {
-            "image_path": 'assets/images/personaje.png',
+            "image_path": os.path.join(assets_path, "images", "personaje.png"),
             "weapon_name": "Gun",
             "size": 50,
             "speed": 9
         },
         "Brillo": {
-            "image_path": 'assets/images/Javi.png',
+            "image_path": os.path.join(assets_path, "images", "Javi.png"),
             "weapon_name": "Gun",
             "size": 50,
             "speed": 6
@@ -35,14 +39,14 @@ class Player(Character):
 
     def __init__(self, character_name="DefaultPlayer"):
         info = pygame.display.Info()
-        if (character_name in self.predefined_characters):
+        if character_name in self.predefined_characters:
             character_info = self.predefined_characters[character_name]
             self.image_path = character_info["image_path"]
             weapon = Weapon(character_info["weapon_name"])
             super().__init__(info.current_w // 2, info.current_h // 2, character_info["size"], character_info["speed"], character_info["image_path"], weapon)
         else:
             weapon = Weapon("Gun")
-            super().__init__(info.current_w // 2, info.current_h // 2, 60, 5, 'assets/images/player_image.png', weapon)
+            super().__init__(info.current_w // 2, info.current_h // 2, 60, 5, os.path.join(self.assets_path, "images", "player_image.png"), weapon)
         
         self.direction = (0, 0)
         self.weapon = weapon
@@ -54,7 +58,7 @@ class Player(Character):
         self.triple_shoot = False
 
         # Load the pixel font
-        self.font = pygame.font.Font('assets/fonts/pixel.ttf', 36)
+        self.font = pygame.font.Font(os.path.join(self.assets_path, "fonts", "pixel.ttf"), 36)
 
     def calculate_experience_to_next_level(self):
         # Experience required increases by 50% each level

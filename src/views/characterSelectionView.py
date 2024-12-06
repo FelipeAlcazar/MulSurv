@@ -8,14 +8,18 @@ class CharacterSelectionView:
         self.screen = screen
         self.clock = pygame.time.Clock()
 
+        # Base path for assets
+        base_path = os.path.dirname(__file__)
+        assets_path = os.path.join(base_path, "..", "..", "assets")
+
         # Load data
         self.data = load_data()
         self.coins = self.data.get("coins", 0)
         self.unlocked_characters = self.data.get("unlocked_characters", [])
 
         # Load images
-        self.coin_image = pygame.image.load("assets/images/coin.png").convert_alpha()
-        self.locked_image = pygame.image.load("assets/images/lock.png").convert_alpha()
+        self.coin_image = pygame.image.load(os.path.join(assets_path, "images", "coin.png")).convert_alpha()
+        self.locked_image = pygame.image.load(os.path.join(assets_path, "images", "lock.png")).convert_alpha()
 
         # Colors
         self.text_color = (255, 255, 255)
@@ -30,16 +34,16 @@ class CharacterSelectionView:
         self.characters_data = Player.predefined_characters
 
         # Background
-        self.background_image = pygame.image.load("assets/images/background.png").convert()
+        self.background_image = pygame.image.load(os.path.join(assets_path, "images", "background.png")).convert()
         self.background_image = pygame.transform.scale(self.background_image, (self.screen.get_width(), self.screen.get_height()))
 
         # Fonts (adaptativos al tamaño de la pantalla)
-        self.title_font = pygame.font.Font('assets/fonts/pixel.ttf', int(self.screen.get_width() * 0.05))
-        self.name_font = pygame.font.Font('assets/fonts/pixel.ttf', int(self.screen.get_width() * 0.025))
-        self.stats_font = pygame.font.Font('assets/fonts/pixel.ttf', int(self.screen.get_width() * 0.02))
-        self.unlock_font = pygame.font.Font('assets/fonts/pixel.ttf', int(self.screen.get_width() * 0.02))
-        self.button_font = pygame.font.Font('assets/fonts/pixel.ttf', int(self.screen.get_width() * 0.03))
-        self.coin_font = pygame.font.Font('assets/fonts/pixel.ttf', int(self.screen.get_width() * 0.03))
+        self.title_font = pygame.font.Font(os.path.join(assets_path, "fonts", "pixel.ttf"), int(self.screen.get_width() * 0.05))
+        self.name_font = pygame.font.Font(os.path.join(assets_path, "fonts", "pixel.ttf"), int(self.screen.get_width() * 0.025))
+        self.stats_font = pygame.font.Font(os.path.join(assets_path, "fonts", "pixel.ttf"), int(self.screen.get_width() * 0.02))
+        self.unlock_font = pygame.font.Font(os.path.join(assets_path, "fonts", "pixel.ttf"), int(self.screen.get_width() * 0.02))
+        self.button_font = pygame.font.Font(os.path.join(assets_path, "fonts", "pixel.ttf"), int(self.screen.get_width() * 0.03))
+        self.coin_font = pygame.font.Font(os.path.join(assets_path, "fonts", "pixel.ttf"), int(self.screen.get_width() * 0.03))
 
     def draw_coins(self):
         """Dibuja la cantidad de monedas actuales."""
@@ -179,5 +183,3 @@ class CharacterSelectionView:
 
             self.draw()
             self.clock.tick(30)
-
-

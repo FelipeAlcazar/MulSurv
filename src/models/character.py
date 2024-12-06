@@ -1,3 +1,4 @@
+import os
 import pygame
 import random
 
@@ -7,7 +8,7 @@ class Character:
         self.x = x
         self.y = y
         self.speed = speed
-        self.image = pygame.image.load(image_path)
+        self.image = pygame.image.load(image_path)  # Use the image_path directly
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
         self.red_tinted_image = self.image.copy()
         self.red_tinted_image.fill((255, 0, 0, 128), special_flags=pygame.BLEND_RGBA_MULT)
@@ -16,10 +17,15 @@ class Character:
         self.invincible = False
         self.invincible_start_time = 0
         self.invincible_duration = 3000  # 3 seconds of invincibility
+
+        # Base path for assets
+        base_path = os.path.dirname(__file__)
+        assets_path = os.path.join(base_path, "..", "..", "assets")
+
         self.hit_sounds = [
-            pygame.mixer.Sound("assets/sounds/playerHit.wav"), 
-            pygame.mixer.Sound("assets/sounds/playerHit2.wav")
-        ]  # Load the hit sounds
+            pygame.mixer.Sound(os.path.join(assets_path, "sounds", "playerHit.wav")), 
+            pygame.mixer.Sound(os.path.join(assets_path, "sounds", "playerHit2.wav"))
+        ]
 
     def draw(self, screen):
         if self.invincible:

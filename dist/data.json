@@ -1,0 +1,21 @@
+{
+    "scoreboard": [
+        {
+            "initials": "FEL",
+            "score": 10
+        },
+        {
+            "initials": "HOL",
+            "score": 3
+        },
+        {
+            "initials": "SAD",
+            "score": 3
+        }
+    ],
+    "coins": 7,
+    "unlocked_characters": [
+        "DefaultPlayer"
+    ],
+    "score_earned": 1
+}

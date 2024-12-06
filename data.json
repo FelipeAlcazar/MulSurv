@@ -9,14 +9,16 @@
             "score": 19
         },
         {
-            "initials": "AFJ",
-            "score": 15
+            "initials": "FEL",
+            "score": 4
         }
     ],
-    "coins": 1214,
+    "coins": 1165,
     "unlocked_characters": [
         "DefaultPlayer",
         "Mario",
-        "Miau Miau"
-    ]
+        "Miau Miau",
+        "Brillo"
+    ],
+    "score_earned": 0
 }

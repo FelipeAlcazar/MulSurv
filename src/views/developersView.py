@@ -8,8 +8,14 @@ class DevelopersView:
         pygame.init()
         self.screen = pygame.display.set_mode((self.screen.get_width(), self.screen.get_height()))
         pygame.display.set_caption("Developers View")
-        self.background_image = pygame.image.load('assets/images/workplace.jpg')
+
+        # Base path for assets
+        base_path = os.path.dirname(__file__)
+        assets_path = os.path.join(base_path, "..", "..", "assets")
+
+        self.background_image = pygame.image.load(os.path.join(assets_path, "images", "background.png"))
         self.background_image = pygame.transform.scale(self.background_image, (self.screen.get_width(), self.screen.get_height()))
+        
         # Colores
         self.WHITE = (255, 255, 255)
         self.BLACK = (0, 0, 0)
@@ -27,19 +33,19 @@ class DevelopersView:
                 "name": "Pardou",
                 "role": "Molesta",
                 "description": "Maricon",
-                "photo": "assets/images/pardo.png",
+                "photo": os.path.join(assets_path, "images", "pardo.png"),
             },
             {
                 "name": "Carlos",
                 "role": "Madafacking Boss",
                 "description": "Lo hace todo",
-                "photo": "assets/images/carlos.png",
+                "photo": os.path.join(assets_path, "images", "carlos.png"),
             },
             {
                 "name": "Couti",
                 "role": "COUTINHOOOOOOOOOUU",
                 "description": "WHAT A GOAAAAAAAAAL",
-                "photo": "assets/images/couti.png",
+                "photo": os.path.join(assets_path, "images", "couti.png"),
             },
         ]
 
@@ -106,10 +112,13 @@ class DevelopersView:
 
             # Manejo de eventos
             for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
                     running = False
 
             pygame.display.flip()
             clock.tick(60)
 
-        pygame.quit()
+        # Do not call pygame.quit() here, just return to the main menu

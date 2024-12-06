@@ -1,17 +1,23 @@
+import os
 import pygame
 from src.controllers.multiGameController import Game
+
 class MultiplayerView:
     def __init__(self, screen):
         self.screen = screen
         pygame.init()
         info = pygame.display.Info()
         
+        # Base path for assets
+        base_path = os.path.dirname(__file__)
+        assets_path = os.path.join(base_path, "..", "..", "assets")
+
         # Load background image
-        self.background_image = pygame.image.load('assets/images/background.png')
+        self.background_image = pygame.image.load(os.path.join(assets_path, 'images', 'background.png'))
         self.background_image = pygame.transform.scale(self.background_image, (self.screen.get_width(), self.screen.get_height()))
 
         # Load the pixel font
-        self.font = pygame.font.Font('assets/fonts/pixel.ttf', 60)
+        self.font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 60)
 
         # Define button properties
         self.button_width = 300
@@ -19,7 +25,7 @@ class MultiplayerView:
         self.button_color = (70, 70, 70)
         self.button_hover_color = (90, 90, 90)  # Slightly lighter grey for hover
         self.button_text_color = (255, 255, 255)
-        self.button_font = pygame.font.Font('assets/fonts/pixel.ttf', 48)
+        self.button_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 48)
 
         # Define button positions
         self.host_button_rect = pygame.Rect(

@@ -1,8 +1,8 @@
+import os
 import pygame
 import time
 from PIL import Image
 from src.utils.data_manager import load_data, save_data
-
 
 class ScoreManager:
     def __init__(self, screen):
@@ -33,8 +33,11 @@ class ScoreManager:
 
     def enter_initials(self):
         """Pantalla para que el jugador ingrese sus iniciales y mostrar el top 3 actual."""
-        font_large = pygame.font.Font(None, 64)
-        font_small = pygame.font.Font(None, 48)
+        base_path = os.path.dirname(__file__)
+        assets_path = os.path.join(base_path, "..", "..", "assets")
+        
+        font_large = pygame.font.Font(os.path.join(assets_path, "fonts", "pixel.ttf"), 64)
+        font_small = pygame.font.Font(os.path.join(assets_path, "fonts", "pixel.ttf"), 48)
         initials = ""
         enter_initials = True
 
@@ -94,7 +97,10 @@ class ScoreManager:
 
     def load_background_image(self, path):
         """Carga la imagen de fondo y la redimensiona."""
-        background = pygame.image.load(path)
+        base_path = os.path.dirname(__file__)
+        assets_path = os.path.join(base_path, "..", "..", "assets")
+        
+        background = pygame.image.load(os.path.join(assets_path, path))
         background = pygame.transform.scale(background, (self.screen.get_width(), self.screen.get_height()))
         background.set_alpha(80)  # Establecer opacidad
         return background
@@ -122,4 +128,3 @@ class ScoreManager:
             # Avanzar al siguiente fotograma
             frame_index = (frame_index + 1) % len(gif_frames)
             time.sleep(0.1)  # Controlar la velocidad de reproducción
-
