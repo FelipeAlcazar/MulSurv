@@ -42,7 +42,7 @@ class DevelopersView:
             {
                 "name": "Felipe Alcázar",
                 "role": "Software Engineer",
-                "photo": os.path.join(assets_path, "images", "couti.png"),
+                "photo": os.path.join(assets_path, "images", "felipe.jpg"),
             },
         ]
 
