@@ -1,6 +1,7 @@
 import os
 import pygame
 from src.controllers.multiGameController import Game
+import socket
 
 class MultiplayerView:
     def __init__(self, screen):
@@ -122,6 +123,8 @@ class MultiplayerView:
         active_port = False
         error_message = ""
 
+        local_ip = self.get_ip()  # Obtener la IP local del usuario
+
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -189,7 +192,17 @@ class MultiplayerView:
                 error_surface = self.font.render(error_message, True, (255, 0, 0))
                 self.screen.blit(error_surface, (self.screen.get_width() // 2 - error_surface.get_width() // 2, input_rect_port.y + 70))
 
+            # Mostrar la IP local en la parte inferior con letras negras
+            ip_text = self.font.render(f"Your IP: {local_ip}", True, (0, 0, 0))
+            self.screen.blit(ip_text, (self.screen.get_width() // 2 - ip_text.get_width() // 2, self.screen.get_height() - 50))
+
             pygame.display.update()
+
+    def get_ip(self):
+        """Obtiene la IP local del usuario."""
+        hostname = socket.gethostname()
+        local_ip = socket.gethostbyname(hostname)
+        return local_ip
 
     def show_multiplayer_menu(self):
         menu_options = ["Host", "Join"]

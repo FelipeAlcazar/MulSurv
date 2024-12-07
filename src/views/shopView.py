@@ -134,7 +134,7 @@ class ShopView:
             self.screen.blit(name_text, (name_x, box_y + box_height // 2 + 20))
 
             # Costo del personaje
-            cost = character_data.get("cost", 50)  # Ejemplo de costo por defecto
+            cost = character_data.get("cost")
             if character_name in self.unlocked_characters:
                 unlock_text = "Unlocked"
                 unlock_color = (0, 255, 0)

@@ -30,21 +30,18 @@ class DevelopersView:
         # Datos de los desarrolladores
         self.developers = [
             {
-                "name": "Pardou",
-                "role": "Molesta",
-                "description": "Maricon",
+                "name": "Javier Pardo",
+                "role": "Software Engineer",
                 "photo": os.path.join(assets_path, "images", "pardo.png"),
             },
             {
-                "name": "Carlos",
-                "role": "Madafacking Boss",
-                "description": "Lo hace todo",
+                "name": "Carlos Sánchez",
+                "role": "Software Engineer",
                 "photo": os.path.join(assets_path, "images", "carlos.png"),
             },
             {
-                "name": "Couti",
-                "role": "COUTINHOOOOOOOOOUU",
-                "description": "WHAT A GOAAAAAAAAAL",
+                "name": "Felipe Alcázar",
+                "role": "Software Engineer",
                 "photo": os.path.join(assets_path, "images", "couti.png"),
             },
         ]
@@ -96,7 +93,6 @@ class DevelopersView:
             # Dibujar los textos con la nueva distancia
             self.render_text_centered(self.screen, developer["name"], self.name_font, self.WHITE, (x, y + 90 + text_distance))
             self.render_text_centered(self.screen, developer["role"], self.description_font, self.GRAY, (x, y + 120 + text_distance))
-            self.render_text_centered(self.screen, developer["description"], self.description_font, self.GRAY, (x, y + 140 + text_distance))
 
     def run(self):
         """Ejecuta el bucle principal."""

@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import pygame
 import socket
@@ -100,6 +101,9 @@ class Game:
         """Start the server as a subprocess."""
         base_path = os.path.dirname(__file__)
         server_path = os.path.join(base_path, 'serverController.py')
+        if getattr(sys, 'frozen', False):
+            # If the application is frozen (compiled with PyInstaller)
+            server_path = os.path.join(sys._MEIPASS, 'src', 'controllers', 'serverController.py')
         subprocess.Popen(['python', server_path, '--host', ip, '--port', str(port)])
     
     def wait_for_all_players(self):

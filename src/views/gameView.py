@@ -69,7 +69,7 @@ class GameView:
             upgrade_images.append(upgrade_image)
 
         # Calculate initial x and y coordinates to center the options
-        total_width = sum(image.get_width() for image in upgrade_images) + (len(upgrade_images) - 1) * int(150 * self.scale_factor)  # Adjusted spacing
+        total_width = sum(image.get_width() for image in upgrade_images) + (len(upgrade_images) - 1) * int(200 * self.scale_factor)  # Adjusted spacing
         start_x = (self.screen.get_width() - total_width) // 2
         start_y = self.screen.get_height() // 2
 

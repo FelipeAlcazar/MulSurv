@@ -334,10 +334,20 @@ class GameController:
         self.game_view.show_chosen_upgrades(self.chosen_upgrades)
 
     def get_upgrade_options(self):
-        options = random.sample(available_upgrades, 3)
+        excluded_upgrades = []
+        if "Triple Shoot" in self.chosen_upgrades:
+            excluded_upgrades.append("Triple Shoot")
+            excluded_upgrades.append("Double Shoot")
+        elif "Double Shoot" in self.chosen_upgrades:
+            excluded_upgrades.append("Double Shoot")
+    
+        available_filtered_upgrades = [upgrade for upgrade in available_upgrades if upgrade.name not in excluded_upgrades]
+        options = random.sample(available_filtered_upgrades, 3)
+        
         for option in options:
             if option.name == "Enemies less aggressive":
                 option.apply_upgrade = lambda player: decrease_speed(player, self.enemies)
+        
         selected_option = 0
         return options, selected_option
 

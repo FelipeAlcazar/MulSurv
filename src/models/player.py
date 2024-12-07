@@ -14,25 +14,29 @@ class Player(Character):
             "image_path": os.path.join(assets_path, "images", "default_character.png"),
             "weapon_name": "Gun",
             "size": 50,
-            "speed": 5
+            "speed": 5,
+            "cost": 0
         },
         "Mario": {
             "image_path": os.path.join(assets_path, "images", "second_character.png"),
             "weapon_name": "Gun",
             "size": 50,
-            "speed": 7
+            "speed": 7,
+            "cost": 100
         },
         "Miau Miau": {
             "image_path": os.path.join(assets_path, "images", "personaje.png"),
             "weapon_name": "Gun",
             "size": 50,
-            "speed": 9
+            "speed": 9,
+            "cost": 200
         },
         "Brillo": {
             "image_path": os.path.join(assets_path, "images", "Javi.png"),
             "weapon_name": "Gun",
             "size": 50,
-            "speed": 6
+            "speed": 6,
+            "cost": 300
         },
         
     }
