@@ -21,14 +21,14 @@ class MenuView:
         # Cargar la imagen del logo y reducir su tamaño
         self.logo_image = pygame.image.load(os.path.join(assets_path, 'images', 'logo.png'))
         logo_width, logo_height = self.logo_image.get_size()
-        logo_scale_factor = 0.4
+        logo_scale_factor = 0.5
         new_logo_width = int(logo_width * logo_scale_factor)
         new_logo_height = int(logo_height * logo_scale_factor)
         self.logo_image = pygame.transform.scale(self.logo_image, (new_logo_width, new_logo_height))
 
         # Cargar la fuente de píxeles
-        self.font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 26)
-        self.menu_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 60)
+        self.font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 42)
+        self.menu_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 68)
         
         self.menu_music = pygame.mixer.Sound(os.path.join(assets_path, 'sounds', 'mainMenuSong.mp3'))
         self.menu_music.play(loops=-1)
@@ -70,7 +70,7 @@ class MenuView:
         # Corner buttons
         help_button_rect = pygame.Rect(WIDTH - 160, 20, 150, 50)
         quit_button_rect = pygame.Rect(10, 20, 150, 50)
-        developers_button_rect = pygame.Rect(WIDTH - 210, HEIGHT - 70, 200, 50)  # Bottom right corner
+        developers_button_rect = pygame.Rect(WIDTH - 260, HEIGHT - 70, 240, 50)  # Bottom right corner
 
         corner_rects.extend([help_button_rect, quit_button_rect, developers_button_rect])
 
@@ -135,7 +135,7 @@ class MenuView:
             self.screen.blit(self.background_image, (0, 0))
 
             # Draw logo
-            logo_rect = self.logo_image.get_rect(center=(WIDTH // 2, int(HEIGHT // 4)))
+            logo_rect = self.logo_image.get_rect(center=(WIDTH // 2, int(HEIGHT // 3.5)))
             self.screen.blit(self.logo_image, logo_rect)
 
             # Draw central buttons

@@ -59,8 +59,8 @@ class GameController:
         self.controller_enemy_interval = 60000  # 60 seconds in milliseconds
         self.paused = False
         self.chosen_upgrades = {}
-        self.pause_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 74)
-        self.options_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 48)
+        self.pause_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 90)
+        self.options_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 64)
         
         # Cargar imagen de fondo
         self.background_image = pygame.image.load(os.path.join(assets_path, 'images', 'background_game.png')).convert()

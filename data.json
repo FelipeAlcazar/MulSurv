@@ -5,20 +5,20 @@
             "score": 32
         },
         {
-            "initials": "AJB",
-            "score": 19
+            "initials": "CSD",
+            "score": 21
         },
         {
-            "initials": "FEL",
-            "score": 11
+            "initials": "AJB",
+            "score": 19
         }
     ],
-    "coins": 1165,
+    "coins": 1169,
     "unlocked_characters": [
         "DefaultPlayer",
         "Mario",
         "Miau Miau",
         "Brillo"
     ],
-    "score_earned": 0
+    "score_earned": 4
 }

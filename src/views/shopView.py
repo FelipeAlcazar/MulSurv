@@ -50,11 +50,11 @@ class ShopView:
         )
         
         # Load the pixel font
-        self.font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 36)
-        self.title_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 48)
-        self.name_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 24)
-        self.unlock_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 20)
-        self.button_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 24)
+        self.font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 42)
+        self.title_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 56)
+        self.name_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 30)
+        self.unlock_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 30)
+        self.button_font = pygame.font.Font(os.path.join(assets_path, 'fonts', 'pixel.ttf'), 34)
 
     def draw_coins(self):
         # Obtener el ancho de la pantalla
