@@ -33,22 +33,29 @@ class DevelopersView:
                 "name": "Javier Pardo",
                 "role": "Software Engineer",
                 "photo": os.path.join(assets_path, "images", "pardo.png"),
+                "qr": os.path.join(assets_path, "images", "qr_javier.png"),
             },
             {
                 "name": "Carlos Sánchez",
                 "role": "Software Engineer",
                 "photo": os.path.join(assets_path, "images", "carlos.png"),
+                "qr": os.path.join(assets_path, "images", "qr_carlos.png"),
             },
             {
                 "name": "Felipe Alcázar",
                 "role": "Software Engineer",
                 "photo": os.path.join(assets_path, "images", "felipe.jpg"),
+                "qr": os.path.join(assets_path, "images", "qr_felipe.png"),
             },
         ]
 
         # Cargar imágenes
         self.developer_images = [
             self.load_image(dev["photo"], (100, 100)) for dev in self.developers
+        ]
+        
+        self.qr_images = [
+            self.load_image(dev["qr"], (250, 250)) for dev in self.developers
         ]
 
     def load_image(self, filename, size=None):
@@ -93,6 +100,13 @@ class DevelopersView:
             # Dibujar los textos con la nueva distancia
             self.render_text_centered(self.screen, developer["name"], self.name_font, self.WHITE, (x, y + 90 + text_distance))
             self.render_text_centered(self.screen, developer["role"], self.description_font, self.GRAY, (x, y + 120 + text_distance))
+
+            # Dibujar el código QR debajo del texto
+            qr_x = x -120  # Centrar QR horizontalmente
+            qr_y = y + 170 + text_distance  # Posición vertical debajo del texto
+            self.screen.blit(self.qr_images[i], (qr_x, qr_y))
+
+            
 
     def run(self):
         """Ejecuta el bucle principal."""
