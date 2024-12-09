@@ -366,15 +366,25 @@ class Game:
         
     def draw_second_character_with_label(self, img_name, x, y, label):
         """Función para dibujar un personaje con texto encima."""
-        base_path = os.path.dirname(__file__)
-        assets_path = os.path.join(base_path, "..", "..", "assets", "images")
-        img_path = os.path.join(assets_path, os.path.basename(img_name))        
-        image_surface = pygame.image.load(img_path)
-        image_surface = pygame.transform.scale(image_surface, (50, 50))
-        self.win.blit(image_surface, (x, y))
-        text = self.font.render(label, True, (0, 0, 0))  # Texto en negro
-        self.win.blit(text, (x + 5, y - 10))  # Posición del texto justo encima del personaje
-
+        try:
+            base_path = os.path.dirname(__file__)
+            assets_path = os.path.join(base_path, "..", "..", "assets", "images")
+            img_path = os.path.join(assets_path, os.path.basename(img_name))
+            
+            # Asegurarse de que la ruta sea correcta
+            img_path = os.path.normpath(img_path)
+            
+            image_surface = pygame.image.load(img_path)
+            image_surface = pygame.transform.scale(image_surface, (50, 50))
+            self.win.blit(image_surface, (x, y))
+            text = self.font.render(label, True, (0, 0, 0))  # Texto en negro
+            self.win.blit(text, (x + 5, y - 10))  # Posición del texto justo encima del personaje
+        except FileNotFoundError:
+            print(f"Archivo no encontrado: {img_path}")
+        except pygame.error as e:
+            print(f"Error al cargar la imagen: {e}")
+        except Exception as e:
+            print(f"Error inesperado: {e}")
             
     def shooting(self):
         # Calculate angle between player and mouse position
