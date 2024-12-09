@@ -1,7 +1,7 @@
 import os
 import pygame
 from src.models.player import Player
-from src.models.enemy import HeadphoneEnemy, MouseEnemy, SpecificEnemy, CameraEnemy, ControllerEnemy
+from src.models.enemy import HeadphoneEnemy, MouseEnemy, SpecificEnemy, CameraEnemy, ControllerEnemy, PcEnemy
 from src.models.experiencePoint import ExperiencePoint
 from src.models.upgrade import available_upgrades, decrease_speed
 from src.views.characterSelectionView import CharacterSelectionView
@@ -147,19 +147,15 @@ class GameController:
 
     def end_game(self):
         """Finaliza el juego, muestra pantalla de Game Over con animación y texto, añade monedas ganadas y actualiza el scoreboard si es necesario."""
-        self.coins += self.score
-
         # Add coins earned to the game data
-        self.game_data["coins"] = self.coins
-
-        # Save the score earned to the game data
-        self.game_data["score_earned"] = self.score
+        if self.game_data is None:
+            self.game_data = {}
 
         # Save the updated game data
         save_data(self.game_data)
 
         # Actualizar el scoreboard
-        self.scoremanager.update_scoreboard(self.score)
+        self.scoremanager.update_scoreboard(self.score, self.coins)
 
         base_path = os.path.dirname(__file__)
         assets_path = os.path.join(base_path, "..", "..", "assets")
@@ -288,12 +284,15 @@ class GameController:
             enemy.move_towards_player(self.player)
             enemy.draw(self.screen)
             if check_collision(self.player, enemy):
-                if not self.player.invincible:
-                    if self.player.health == 1:
-                        self.running = False
-                    else:
+                if isinstance(enemy, PcEnemy):
+                    self.player.take_damage()
+                else:
+                    if not self.player.invincible:
                         self.player.take_damage()
                         self.enemies.remove(enemy)
+
+                if self.player.health <= 0:
+                    self.running = False
 
             for projectile in self.projectiles[:]:  # Use a copy of the list
                 if check_collision(projectile, enemy):

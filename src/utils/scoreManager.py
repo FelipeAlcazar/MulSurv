@@ -10,9 +10,10 @@ class ScoreManager:
         self.game_data = load_data()
         self.top_scores = self.game_data.get("scoreboard", [])
 
-    def update_scoreboard(self, score):
+    def update_scoreboard(self, score, coins):
         """Verifica si el score entra en el top 3 y prepara la entrada para iniciales si lo hace."""
         # Si el puntaje es suficiente, añadirlo al top 3
+        self.game_data["coins"] = coins + score  # Add this line
         if len(self.top_scores) < 3 or score > self.top_scores[-1]["score"]:
             self.top_scores.append({"initials": "", "score": score})  # Añadir puntaje temporal
             self.top_scores = sorted(self.top_scores, key=lambda x: x["score"], reverse=True)[:3]
@@ -108,6 +109,10 @@ class ScoreManager:
     def show_game_over_screen(self, gif_frames, background, game_over_image, game_over_rect):
         """Muestra la pantalla de 'Game Over' con la animación y los gráficos."""
         frame_index = 0
+
+        # Ensure coins are added and saved before showing the Game Over screen
+        save_data(self.game_data)
+
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

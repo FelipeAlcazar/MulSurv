@@ -1,24 +1,23 @@
 {
     "scoreboard": [
         {
-            "initials": "PAR",
-            "score": 32
+            "initials": "FEL",
+            "score": 101
         },
         {
-            "initials": "CSD",
-            "score": 21
+            "initials": "JOE",
+            "score": 82
         },
         {
-            "initials": "AJB",
-            "score": 19
+            "initials": "ADE",
+            "score": 3
         }
     ],
-    "coins": 1169,
+    "coins": 1185,
     "unlocked_characters": [
         "DefaultPlayer",
         "Mario",
         "Miau Miau",
         "Brillo"
-    ],
-    "score_earned": 4
+    ]
 }

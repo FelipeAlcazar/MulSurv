@@ -42,7 +42,14 @@ class Enemy:
             "image_size": 80,
             "speed": 6,
             "health": 5
-        }
+        },
+        "PcEnemy": {
+            "image_path": os.path.join(assets_path, "images", "pc_enemy.png"),
+            "size": 200,
+            "image_size": 200,
+            "speed": 2,
+            "health": 100
+        }       
     }
 
     def __init__(self, x, y, enemy_type="DefaultEnemy"):
@@ -53,6 +60,7 @@ class Enemy:
             self.speed = enemy_info["speed"]
             self.original_speed = self.speed
             self.health = enemy_info["health"]
+            self.max_health = self.health
             self.image = pygame.image.load(enemy_info["image_path"])
             self.image = pygame.transform.scale(self.image, (self.image_size, self.image_size))
         else:
@@ -61,6 +69,7 @@ class Enemy:
             self.speed = 2
             self.original_speed = self.speed
             self.health = 1
+            self.max_health = self.health
             self.image = pygame.image.load(os.path.join(self.assets_path, "images", "enemy_image.png"))
             self.image = pygame.transform.scale(self.image, (self.image_size, self.image_size))
         
@@ -108,3 +117,26 @@ class MouseEnemy(Enemy):
 class ControllerEnemy(Enemy):
     def __init__(self, x, y):
         super().__init__(x, y, "ControllerEnemy")
+
+class PcEnemy(Enemy):
+    def __init__(self, x, y):
+        super().__init__(x, y, "PcEnemy")
+
+    def draw(self, screen):
+        super().draw(screen)
+        self.draw_health_bar(screen)
+
+    def draw_health_bar(self, screen):
+        # Calculate the health bar's width
+        health_bar_width = self.size
+        health_bar_height = 10
+        health_ratio = self.health / self.max_health
+        current_health_bar_width = health_bar_width * health_ratio
+
+        # Draw the health bar background
+        health_bar_bg_rect = pygame.Rect(self.x, self.y - health_bar_height - 5, health_bar_width, health_bar_height)
+        pygame.draw.rect(screen, (255, 0, 0), health_bar_bg_rect)
+
+        # Draw the current health bar
+        health_bar_rect = pygame.Rect(self.x, self.y - health_bar_height - 5, current_health_bar_width, health_bar_height)
+        pygame.draw.rect(screen, (0, 255, 0), health_bar_rect)
