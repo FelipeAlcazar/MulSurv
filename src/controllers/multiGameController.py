@@ -278,8 +278,9 @@ class Game:
         """Función para enviar posición al servidor."""
         s = socket.socket()
         try:
-            s.connect((self.ip, self.port)) 
-            send_text = f"pos:{self.name}:{self.player.x}:{self.player.y}:{self.player.image_path}:{self.user_id}"
+            s.connect((self.ip, self.port))
+            image_name = os.path.basename(self.player.image_path)  # Extract the image name
+            send_text = f"pos:{self.name}:{self.player.x}:{self.player.y}:{image_name}:{self.user_id}"
             s.sendall(send_text.encode('utf-8'))
             yanit = s.recv(1024).decode("utf-8")
             
@@ -289,7 +290,7 @@ class Game:
             else:
                 self.cli_datas = yanit.split(";")
 
-            s.close() 
+            s.close()
         except socket.error as msg:
             print(msg)
             
@@ -363,14 +364,18 @@ class Game:
         text = self.font.render(label, True, (0, 0, 0))  # Texto en negro
         self.win.blit(text, (x + 5, y - 10))  # Posición del texto justo encima del personaje
         
-    def draw_second_character_with_label(self, img, x, y, label):
+    def draw_second_character_with_label(self, img_name, x, y, label):
         """Función para dibujar un personaje con texto encima."""
-        image_surface = pygame.image.load(img)
+        base_path = os.path.dirname(__file__)
+        assets_path = os.path.join(base_path, "..", "..", "assets", "images")
+        img_path = os.path.join(assets_path, os.path.basename(img_name))        
+        image_surface = pygame.image.load(img_path)
         image_surface = pygame.transform.scale(image_surface, (50, 50))
         self.win.blit(image_surface, (x, y))
         text = self.font.render(label, True, (0, 0, 0))  # Texto en negro
         self.win.blit(text, (x + 5, y - 10))  # Posición del texto justo encima del personaje
-        
+
+            
     def shooting(self):
         # Calculate angle between player and mouse position
         mouse_pos = pygame.mouse.get_pos()
