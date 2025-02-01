@@ -9,7 +9,9 @@
   - Supera oleadas de enemigos cada vez más desafiantes.
   - Mejora tus habilidades al subir de nivel.
   - Desbloquea personajes únicos en la tienda del juego.
-  
+
+  ![DemostracinSingleplayer-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/70a7ef58-3227-4df6-87f2-9d0c88d194eb)
+
 - **Modo Multijugador** 🔥:
   - Compite en un **Battle Royale** con otros jugadores.
   - Sé el último en pie y demuestra tu estrategia.
